@@ -3,7 +3,7 @@ ST7735S
 
 ST7735S - an OS independent library for the neat ST7735S 80x160 IPS 0.96" TFT-Module
 
- ![Image](https://github.com/bersch/ST7735S/blob/master/img.jpg)
+ ![Image](https://github.com/bersch/ST7735S/blob/master/80x160-ips-0.96-st7735s.jpg)
 
 # Features
 
