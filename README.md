@@ -1,9 +1,7 @@
 ST7735S
 =======
 
-ST7735S - an OS independent library for the neat ST7735S 80x160 IPS 0.96" TFT-Module
-
- ![Image](https://github.com/bersch/ST7735S/blob/master/80x160-ips-0.96-st7735s.jpg)
+an OS independent library for the neat ST7735S 80x160 IPS 0.96" TFT-Module
 
 # Features
 
@@ -14,7 +12,7 @@ ST7735S - an OS independent library for the neat ST7735S 80x160 IPS 0.96" TFT-Mo
  * super fast with buffered writes
 
 Adapt this driver to your desired Platform by editng the st7735s_compat.c file.
-With the adapted file this driver may be used for: Arduion, PIC, ARM, Teensy,
+With the adapted file this driver may be used for: Arduino, PIC, ARM, Teensy,
 Raspberry Pi, compatibles like Banana Pi or Orange Pi and many others
 (for Big-Endian-Platforms the color setting shuould be modified).
 
@@ -33,7 +31,7 @@ The bdf2c.pl script can only handle fonts with fixed width.
 
 The chars of a font can be limited by defining a range '0-9'.
 
-# Wireing
+# Wiring
 
    MODULE                   MCU 
    ------                   ---
