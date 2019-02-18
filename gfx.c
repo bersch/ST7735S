@@ -10,7 +10,7 @@ void Pixel(uint16_t x, uint16_t y) {
 void fillScreen(void) {
     for (uint16_t y = 0; y < HEIGHT; y++)
         for (uint16_t x = 0; x < WIDTH; x++)
-            Pixel(x,y);
+            ST7735S_Pixel(x,y);
 }
 
 /******************************************************************************
@@ -33,7 +33,7 @@ void _LineLow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
     uint16_t y = y0;
 
     for(uint16_t x = x0; x <= x1; x++) {
-        Pixel(x,y);
+        ST7735S_Pixel(x,y);
         if (D > 0) {
             y += yi;
             D -= 2*dx;
@@ -57,7 +57,7 @@ void _LineHigh(uint16_t x0,uint16_t y0, uint16_t x1, uint16_t y1) {
     uint16_t x = x0;
 
     for (uint16_t y = y0; y < y1; y++) {
-        Pixel(x,y);
+        ST7735S_Pixel(x,y);
         if (D > 0) {
             x += xi;
             D -= 2*dy;
@@ -87,15 +87,15 @@ void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
 
 void plot8CirclePoints(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
 
-    Pixel(x1+x0, y1+y0);
-    Pixel(x1+y0, y1+x0);
-    Pixel(x1-y0, y1+x0);
-    Pixel(x1-x0, y1+y0);
+    ST7735S_Pixel(x1+x0, y1+y0);
+    ST7735S_Pixel(x1+y0, y1+x0);
+    ST7735S_Pixel(x1-y0, y1+x0);
+    ST7735S_Pixel(x1-x0, y1+y0);
 
-    Pixel(x1-x0, y1-y0);
-    Pixel(x1-y0, y1-x0);
-    Pixel(x1+y0, y1-x0);
-    Pixel(x1+x0, y1-y0);
+    ST7735S_Pixel(x1-x0, y1-y0);
+    ST7735S_Pixel(x1-y0, y1-x0);
+    ST7735S_Pixel(x1+y0, y1-x0);
+    ST7735S_Pixel(x1+x0, y1-y0);
 }
 
 void drawCircle(uint16_t xc, uint16_t yc, uint16_t r) {
@@ -183,7 +183,7 @@ void drawGlyph(uint16_t xx, uint16_t yy, uint16_t c) {
             if (x % 8 == 0)
                 row = *glyph++;
             if (row & ( 1 << (7-(x%8)))) {
-                Pixel(xx+x, yy+h);
+                ST7735S_Pixel(xx+x, yy+h);
             } else {
                 if (bg_transparent == false) {
                     ST7735S_bgPixel(xx+x, yy+h);
