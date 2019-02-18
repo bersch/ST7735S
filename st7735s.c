@@ -1,6 +1,6 @@
 #include <stdint.h>
-#include <st7735s.h>
-#include <st7735s_compat.h>
+#include "st7735s.h"
+#include "st7735s_compat.h"
 
 typedef enum {NOP       = 0x00,
               SWRESET   = 0x01, /* Software Reset */
@@ -152,7 +152,7 @@ void ST7735S_Init(void) {
     cInit();
 
     /* backlight */
-    Pin_BLK_Pct(10);
+    Pin_BLK_Pct(100);
 
     /* hard reset */
     Pin_RES_High();
@@ -237,3 +237,9 @@ void ST7735S_bgPixel(uint16_t x, uint16_t y) {
 void Delay(uint32_t d) {
     _Delay(d);
 }
+
+void Backlight_Pct(uint8_t p) {
+    if (p <= 100) 
+        Pin_BLK_Pct(p);
+}
+

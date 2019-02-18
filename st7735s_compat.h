@@ -2,8 +2,6 @@
 #define __st7735s_compat_h__
 
 #include <inttypes.h>
-#include <stdlib.h>
-#include "st7735s.h"
 
 void cInit(void);
 void Pin_CS_Low(void);

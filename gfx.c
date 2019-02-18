@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include "st7735s.h"
-#include "st7735s_compat.h"
 #include "fonts.h"
+#include "gfx.h"
 
 void Pixel(uint16_t x, uint16_t y) {
      ST7735S_Pixel(x, y);
@@ -65,6 +65,10 @@ void _LineHigh(uint16_t x0,uint16_t y0, uint16_t x1, uint16_t y1) {
         D += 2*dx;
     }
 }
+
+#ifndef abs
+#define abs(x) ( (x<0) ? -(x) : (x) )
+#endif
 
 void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
 

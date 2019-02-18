@@ -2,9 +2,8 @@
 #define __ST7735S_h__
 
 #include <inttypes.h>
-#include <stdlib.h>
-#include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 /* this may differ from the default 80x160 */
 #define WIDTH  161
@@ -39,6 +38,7 @@ void emptyfunc(void);
 void resetWindow(void);
 void updateWindow(uint16_t x, uint16_t y);
 void Delay(uint32_t);
+void Backlight_Pct(uint8_t p);
 void ST7735S_Init(void);
 bool ST7735S_flush(void);
 void ST7735S_Pixel(uint16_t x, uint16_t y);
