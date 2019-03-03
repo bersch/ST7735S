@@ -11,10 +11,9 @@ void Pin_RES_Low(void);
 void Pin_DC_High(void);
 void Pin_DC_Low(void);
 void Pin_BLK_Pct(uint8_t);
-void SPI_send(uint16_t len, uint8_t *data);
+
 void SPI_TransmitCmd(uint16_t len, uint8_t *data);
 void SPI_TransmitData(uint16_t len, uint8_t *data);
-void SPI_Transmit(uint16_t len, uint8_t *data);
 void SPI_Transmit(uint16_t len, uint8_t *data);
 void _Delay(uint32_t d);
 

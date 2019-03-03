@@ -43,6 +43,7 @@ void ST7735S_Init(void);
 bool ST7735S_flush(void);
 void ST7735S_Pixel(uint16_t x, uint16_t y);
 void ST7735S_bgPixel(uint16_t x, uint16_t y);
+void setOrientation(rotation_t r);
 void setTransparent(bool);
 void setFont(uint8_t *);
 void ST7735S_Text(uint16_t, uint16_t, char *);

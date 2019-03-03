@@ -100,21 +100,16 @@ static uint8_t init_cmd[] = {
     0,  IDMOFF,
     0,   NORON,  /* normal display mode on */
     0,  DISPON,  /* recover from display off, output from frame mem enabled */
-
 };
 
 void initCommands(void) {
-
     uint16_t i = 0;
 
     Pin_CS_Low();
-
     while (i < sizeof(init_cmd)) {
 
         uint8_t args = init_cmd[i];
-
         SPI_Transmit(args+1, &init_cmd[i+1]);
-
         i+=args+2;
     }
     Pin_CS_High();
@@ -122,6 +117,7 @@ void initCommands(void) {
 
 void setOrientation(rotation_t r) {
     uint8_t cmd[] = { MADCTL, 0 };
+    Pin_CS_Low();
     switch ((uint8_t)r) {
         case   R0: cmd[1] = 0b01100000; break;
         case  R90: cmd[1] = 0b11000000; break;
@@ -129,6 +125,7 @@ void setOrientation(rotation_t r) {
         case R270: cmd[1] = 0b01000000; break;
     }
     SPI_Transmit( 2, cmd);
+    Pin_CS_High();
 }
 
 void setTransparent(bool t) {
@@ -188,9 +185,9 @@ bool ST7735S_flush(void)
         SPI_TransmitCmd(1, cmd);
 
 #if BUFFER
-        uint16_t width  = (xmax-xmin+1)*2;
+        uint16_t len  = (xmax-xmin+1)*2;
         for (uint16_t y = ymin; y <= ymax; y++)
-            SPI_TransmitData(width, (uint8_t *)&frame[WIDTH*y+xmin]);
+            SPI_TransmitData(len, (uint8_t *)&frame[WIDTH*y+xmin]);
 #else
         SPI_TransmitData( 3, (uint8_t *)&frame[0]);
 #endif

@@ -3,7 +3,7 @@
 #include "fonts.h"
 #include "gfx.h"
 
-void Pixel(uint16_t x, uint16_t y) {
+void setPixel(uint16_t x, uint16_t y) {
      ST7735S_Pixel(x, y);
 }
 

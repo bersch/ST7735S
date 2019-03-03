@@ -1,7 +1,7 @@
 #ifndef __GFX_H__
 #define __GFX_H__
 
-void Pixel(uint16_t, uint16_t);
+void setPixel(uint16_t, uint16_t);
 void fillScreen(void);
 void setFont(uint8_t *);
 void drawText(uint16_t, uint16_t, char *);

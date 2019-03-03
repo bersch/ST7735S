@@ -56,7 +56,8 @@ void Pin_BLK_Pct(uint8_t pct) {
 }
 
 void SPI_send(uint16_t len, uint8_t *data) {
-    SPI_write(*data++, data, len);
+    while (len--)
+        SPI.transfer(*buffer++);
 }
 
 void SPI_TransmitCmd(uint16_t len, uint8_t *data) {
