@@ -201,7 +201,7 @@ void drawText(uint16_t x, uint16_t y, char *t) {
 }
 
 void setColor(color565_t c) {
-    // lcb setting
+    // lsb setting
     color.u16 = (c.g << 6 | c.r) << 8 | (c.b << 3 | c.g >> 3);
 }
 
