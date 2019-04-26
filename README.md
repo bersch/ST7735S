@@ -10,14 +10,30 @@ an OS independent library for the neat ST7735S 80x160 IPS 0.96" TFT-Module
  * Implements: Pixel, fillScreen, Line, Circle, Color, Fonts
  * BDF-Font converter included (bdf2c.pl) 
  * super fast with buffered writes
+ * great improvement on low mem with HVBUFFER
 
 Adapt this driver to your desired Platform by editng the st7735s_compat.c file.
 With the adapted file this driver may be used for: Arduino, PIC, ARM, Teensy,
 Raspberry Pi, compatibles like Banana Pi or Orange Pi and many others
 (for Big-Endian-Platforms the color setting shuould be modified).
 
-Buffered writes speeds up everything. However if you use Arduino on 
-Atmega328 compile with -DBUFFER=0 to reduce memory usage.
+Buffered writes speeds up everything. Implemented are three buffer modes:
+
+ * BUFFER1  - actually no buffered writes, slow, for limited ram.
+ * HVBUFFER - one line buffer with WIDTH * 2 bytes size. Acts as for either
+    row or column buffer. 
+ * BUFFER   - full frame WIDTH * HEIGHT * 2 bytes size. very fast.
+
+The HVBUFFER is based on the fact, that due to design of the ST7735 to write
+a single pixel one need to write 13 bytes on the SPI bus. For two bytes that are
+adjacent in horizonal or vertical direction one need to write 15 bytes.
+HVBUFFER stores one pixel and checks if the following pixel is adjacent.
+Depending on the next pixel HVBUFFER acts like a row or column cache as long
+as following pixels are adjacent. If the next pixel is not adjacent, the
+cached pixels are flushed. Therefore the last action needs to be flushBuffer().
+
+However if you use Arduino on  Atmega328 compile with -DBUFFER=0 to 
+reduce memory usage. Perhaps HVBUFFER will work as well.
 With a STM32H743 are 90/s full buffer updates possible.
 
 This library uses the Terminus Font available at

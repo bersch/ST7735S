@@ -60,12 +60,19 @@ typedef enum {NOP       = 0x00,
 } ST7735S_Command;
 
 
-#if BUFFER
+#if defined (BUFFER)
 #define FRAMESIZE (WIDTH*HEIGHT)
 color565_t frame[FRAMESIZE] = {0};
-#else
+#elif defined (BUFFER1)
 #define FRAMESIZE 1
 color565_t frame[FRAMESIZE] = {0};
+#elif defined (HVBUFFER)
+color565_t hvframe[WIDTH] = {0};
+color565_t c1;
+typedef enum { HF, VF, ONE, UNDEF } hvtype_t;
+hvtype_t hvtype = UNDEF;
+#else
+#error buffer mode not defined
 #endif
 
 uint16_t xmin, xmax, ymin, ymax;
@@ -138,20 +145,20 @@ void resetWindow(void) {
 
 void updateWindow(uint16_t x, uint16_t y) {
 
+    if (x < WIDTH && x >= 0 && y < HEIGHT && y >= 0) {
     if (x < xmin) xmin = x;
     if (x > xmax) xmax = x;
     if (y < ymin) ymin = y;
     if (y > ymax) ymax = y;
+    }
 }
 
 void ST7735S_fillScreen(void) {
-#if BUFFER
-
+#if defined(BUFFER) || defined(HVBUFFER)
     for(uint16_t y = 0; y < HEIGHT; y++)
         for(uint16_t x = 0; x < WIDTH; x++)
             ST7735S_Pixel(x,y);
     ST7735S_flush();
-
 #else
     uint8_t cmd[] = { RAMWR };
     color565_t buffer[WIDTH];
@@ -170,7 +177,6 @@ void ST7735S_fillScreen(void) {
     }
 #endif
 }
-
 
 void ST7735S_Init(void) {
 
@@ -196,13 +202,12 @@ void ST7735S_Init(void) {
     ST7735S_fillScreen();
 }
 
-bool ST7735S_flush(void)
+void ST7735S_flush(void)
 {
     uint8_t cmd[] = { RAMWR };
 
-    if (xmax >= xmin && ymax >= ymin) {
         Pin_CS_Low();
-        // ST7735S_Idle(OFF);
+
         uint8_t c1[] = { CASET, xmin >> 8, xmin, xmax >> 8, xmax };
         uint8_t c2[] = { RASET, ymin >> 8, ymin, ymax >> 8, ymax };
 
@@ -210,22 +215,36 @@ bool ST7735S_flush(void)
         SPI_Transmit(sizeof(c2), c2);
         SPI_TransmitCmd(1, cmd);
 
-#if BUFFER
+#if defined(BUFFER)
+    #if 1
         uint16_t len  = (xmax-xmin+1)*2;
         for (uint16_t y = ymin; y <= ymax; y++)
             SPI_TransmitData(len, (uint8_t *)&frame[WIDTH*y+xmin]);
-#else
+    #else
+    uint16_t len = (xmax-xmin+1)*2*(ymax-ymin+1);
+    SPI_TransmitData(len, (uint8_t *)&frame[WIDTH*ymin+xmin]);
+    #endif
+#elif defined(HVBUFFER)
+    if (hvtype == VF) { // horiz line
+        uint16_t len  = (xmax-xmin+1)*2;
+        SPI_TransmitData(len, (uint8_t *)&hvframe[xmin]);
+    } else
+        if (hvtype == HF) { // vert line
+        uint16_t len  = (ymax-ymin+1)*2;
+        SPI_TransmitData(len, (uint8_t *)&hvframe[ymin]);
+    }
+    hvtype = UNDEF;
+#elif defined(BUFFER1)
         SPI_TransmitData( 2, (uint8_t *)&frame[0]);
+#else
+#error buffer not defined.
 #endif
         // ST7735S_Idle(ON);
         Pin_CS_High();
         resetWindow();
-        return true;
-    }
-    return false;
 }
 
-#if BUFFER
+#if defined(BUFFER)
 void ST7735S_Pixel(uint16_t x, uint16_t y) {
     if ( x < WIDTH && y < HEIGHT) {
         frame[WIDTH*y+x] = color;
@@ -239,7 +258,88 @@ void ST7735S_bgPixel(uint16_t x, uint16_t y) {
         updateWindow(x,y);
     }
 }
-#else
+#elif defined(HVBUFFER)
+void set_hvpixel(uint16_t x, uint16_t y) {
+	// first pixel
+	if (hvtype == UNDEF) {
+		c1 = color;
+		hvtype = ONE;
+		updateWindow(x,y);
+		return;
+	}
+	// second pixel
+	if (hvtype == ONE) {
+		if (y == ymax && y == ymin && (x == xmin - 1 || x == xmax + 1))  {
+			hvtype = VF;
+			hvframe[xmin] = c1;
+			hvframe[x] = color;
+			updateWindow(x,y);
+			return;
+		}
+		if (x == xmax && x == xmin && (y == ymin - 1 || y == ymax + 1)) {
+			hvtype = HF;
+			hvframe[ymin] = c1;
+			hvframe[y] = color;
+			updateWindow(x,y);
+			return;
+		}
+		// no adjacent pixel, flush and set new entry
+        hvtype = VF;
+        hvframe[xmin] = c1;
+		ST7735S_flush();
+
+		hvtype = ONE;
+		c1 = color;
+		updateWindow(x,y);
+		return;
+	}
+    // third pixel
+	if (hvtype == VF) { // horiz line
+		if (y == ymax && y == ymin && (x == xmin - 1 || x == xmax + 1)) {
+			hvframe[x] = color;
+			updateWindow(x,y);
+			return;
+		}
+		// no adjacent pixel, flush and set new entry
+		ST7735S_flush();
+		
+        hvtype = ONE;
+		c1 = color;
+		updateWindow(x,y);
+		return;
+	}
+	if (hvtype == HF) { // vert line
+		if ( x == xmax && x == xmin && (y == ymin - 1 || y == ymax + 1)) {
+			hvframe[y] = color;
+			updateWindow(x,y);
+			return;
+		}
+		// no adjacent pixel, flush and set new entry
+		ST7735S_flush();
+
+		hvtype = ONE;
+		c1 = color;
+		updateWindow(x,y);
+		return;
+	}
+}
+
+void ST7735S_Pixel(uint16_t x, uint16_t y) {
+    if ( x < WIDTH && y < HEIGHT) {
+        set_hvpixel(x, y);
+    }
+}
+
+void ST7735S_bgPixel(uint16_t x, uint16_t y) {
+    if ( x < WIDTH && y < HEIGHT) {
+        color565_t c = color;
+        color = bg_color;
+        set_hvpixel(x, y);
+        color = c;
+    }
+}
+
+#elif defined(BUFFER1)
 void ST7735S_Pixel(uint16_t x, uint16_t y) {
     if ( x < WIDTH && y < HEIGHT) {
     frame[0] = color;
@@ -262,7 +362,6 @@ void Delay(uint32_t d) {
 }
 
 void Backlight_Pct(uint8_t p) {
-    if (p <= 100) 
-        Pin_BLK_Pct(p);
+        Pin_BLK_Pct(p % 101);
 }
 

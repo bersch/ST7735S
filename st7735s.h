@@ -11,10 +11,11 @@
 #define WIDTH  161
 #define HEIGHT 106
 
+#define HVBUFFER 1
+
 /* undef if low on mem */
-#ifndef BUFFER
-  // #define BUFFER 1
-  #undef  BUFFER
+#if !defined (BUFFER) && !defined (BUFFER1) && !defined (HVBUFFER)
+  #define BUFFER1
 #endif
 
 typedef enum { R0, R90, R180, R270 } rotation_t;
@@ -26,11 +27,12 @@ typedef struct  {
             uint8_t r:5;
             uint8_t g:6;
             uint8_t b:5;
-        };
+        } __attribute__((packed));
         uint8_t u[2];
         uint16_t u16;
     };
-} __attribute__((__packed__)) color565_t;
+} __attribute__((packed)) color565_t;
+
 
 extern color565_t color;
 extern color565_t bg_color;
@@ -39,7 +41,7 @@ extern bool bg_transparent;
 void Delay(uint32_t);
 void Backlight_Pct(uint8_t p);
 void ST7735S_Init(void);
-bool ST7735S_flush(void);
+void ST7735S_flush(void);
 void ST7735S_Pixel(uint16_t x, uint16_t y);
 void ST7735S_bgPixel(uint16_t x, uint16_t y);
 void setOrientation(rotation_t r);

@@ -14,6 +14,10 @@ void fillScreen(void) {
     ST7735S_fillScreen();
 }
 
+void flushBuffer(void) {
+    ST7735S_flush();
+}
+
 /******************************************************************************
      Line+Circle // Bresenham's algorithm
  ******************************************************************************
@@ -139,7 +143,7 @@ typedef struct {
 typedef struct {
         glyph_info_t *gi;
         uint8_t  *glyphs;
-} font_t;
+} __attribute__((packed)) font_t;
 
 font_t pfont;
 

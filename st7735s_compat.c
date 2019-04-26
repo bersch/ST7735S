@@ -6,14 +6,13 @@ uint32_t tim_period = 32768;
 uint32_t tim_pulse;
 
 void cInit(void) {
-    // HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET); // CS low
+	// Pin_Low(CS);
 }
 
 void Pin_CS_Low(void) {
 }
 
 void Pin_CS_High(void) {
-    // HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
 }
 
 void Pin_RES_High(void) {

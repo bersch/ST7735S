@@ -4,6 +4,7 @@
 void setPixel(uint16_t, uint16_t);
 void setbgPixel(uint16_t, uint16_t);
 void fillScreen(void);
+void flushBuffer(void);
 void setFont(uint8_t *);
 void drawText(uint16_t, uint16_t, char *);
 void drawCircle(uint16_t, uint16_t, uint16_t);
