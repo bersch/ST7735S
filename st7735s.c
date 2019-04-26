@@ -1,6 +1,6 @@
 #include <stdint.h>
+#include <string.h>
 #include "st7735s.h"
-#include "st7735s_compat.h"
 
 typedef enum {NOP       = 0x00,
               SWRESET   = 0x01, /* Software Reset */
@@ -77,53 +77,53 @@ bool       bg_transparent = false;
 
 /* columns: 1 = # of params, 2 = command, 3 .. = params */
 static uint8_t init_cmd[] = {
-    0, SWRESET, /* software reset */
-    0,  SLPOUT, /* sleep out, turn off sleep mode */
-    3, FRMCTR1, 0x00, 0b111111, 0b111111, /* frame frequency normal mode (highest frame rate in normal mode) */
-    3, FRMCTR2, 0b1111, 0x01, 0x01, /* frame frequency idle mode */
-    6, FRMCTR3, 0x05, 0x3c, 0x3c, 0x05, 0x3c, 0x3c,  /* frame freq partial mode: 1-3 dot inv, 4-6 col inv */
-    1,  INVCTR, 0x03, /* display inversion control: 3-bit 0=dot, 1=col */
-    3,  PWCTR1, 0x28, 0x08, 0x04, /* power control */
-    1,  PWCTR2, 0xc0,
-    2,  PWCTR3, 0x0d, 0x00,
-    2,  PWCTR4, 0x8d, 0x2a,
-    2,  PWCTR5, 0x8d, 0xee, /* partial */
-    1,  VMCTR1, 0x1a, /* vcom voltage */
-    1,  MADCTL, 0b01100000, /* read write scanning direction */
-    1,  COLMOD, 0x05, /* 3=12bit, 5=16-bit, 6=18-bit  pixel color mode */
-    0,   INVON, /* display inversion on/off */
-    1, NVFCTR1, 0b01000000, /* automatic adjust gate pumping clock for saving power consumption */
-    1, VMOFCTR, 0b11111, /* Set VCOM Voltage level for reduce the flicker issue */
-    4,   CASET, 0x00, 0x00, 0x00,  WIDTH-1, /* column (in frame mem) address set: 2 16bit values XS, XE */
-    4,   RASET, 0x00, 0x00, 0x00, HEIGHT-1, /* row (in frame mem) address set: 2 16bit values YS, YE */
-    1,  GAMSET, 0x02,
-    0,  IDMOFF,
-    0,   NORON,  /* normal display mode on */
-    0,  DISPON,  /* recover from display off, output from frame mem enabled */
+    1, SWRESET, /* software reset */
+    1,  SLPOUT, /* sleep out, turn off sleep mode */
+    4, FRMCTR1, 0x00, 0b111111, 0b111111, /* frame frequency normal mode (highest frame rate in normal mode) */
+    4, FRMCTR2, 0b1111, 0x01, 0x01, /* frame frequency idle mode */
+    7, FRMCTR3, 0x05, 0x3c, 0x3c, 0x05, 0x3c, 0x3c,  /* frame freq partial mode: 1-3 dot inv, 4-6 col inv */
+    2,  INVCTR, 0x03, /* display inversion control: 3-bit 0=dot, 1=col */
+    4,  PWCTR1, 0x28, 0x08, 0x04, /* power control */
+    2,  PWCTR2, 0xc0,
+    3,  PWCTR3, 0x0d, 0x00,
+    3,  PWCTR4, 0x8d, 0x2a,
+    3,  PWCTR5, 0x8d, 0xee, /* partial */
+    2,  VMCTR1, 0x1a, /* vcom voltage */
+    2,  MADCTL, 0b01100000, /* read write scanning direction */
+    2,  COLMOD, 0x05, /* 3=12bit, 5=16-bit, 6=18-bit  pixel color mode */
+    1,   INVON, /* display inversion on/off */
+    2, NVFCTR1, 0b01000000, /* automatic adjust gate pumping clock for saving power consumption */
+    2, VMOFCTR, 0b11111, /* Set VCOM Voltage level for reduce the flicker issue */
+    5,   CASET, 0x00, 0x00, 0x00,  WIDTH-1, /* column (in frame mem) address set: 2 16bit values XS, XE */
+    5,   RASET, 0x00, 0x00, 0x00, HEIGHT-1, /* row (in frame mem) address set: 2 16bit values YS, YE */
+    2,  GAMSET, 0x02,
+    1,  IDMOFF,
+    1,   NORON,  /* normal display mode on */
+    1,  DISPON,  /* recover from display off, output from frame mem enabled */
 };
 
 void initCommands(void) {
-    uint16_t i = 0;
+
+	uint8_t args;
 
     Pin_CS_Low();
-    while (i < sizeof(init_cmd)) {
+    for(uint16_t i = 0; i < sizeof(init_cmd); i+=args+1) {
+        args = init_cmd[i];
 
-        uint8_t args = init_cmd[i];
-        SPI_Transmit(args+1, &init_cmd[i+1]);
-        i+=args+2;
+        SPI_Transmit(args, &init_cmd[i+1]);
     }
     Pin_CS_High();
 }
 
 void setOrientation(rotation_t r) {
     uint8_t cmd[] = { MADCTL, 0 };
-    Pin_CS_Low();
     switch ((uint8_t)r) {
         case   R0: cmd[1] = 0b01100000; break;
         case  R90: cmd[1] = 0b11000000; break;
         case R180: cmd[1] = 0b10100000; break;
         case R270: cmd[1] = 0b01000000; break;
     }
+    Pin_CS_Low();
     SPI_Transmit( 2, cmd);
     Pin_CS_High();
 }
@@ -144,12 +144,40 @@ void updateWindow(uint16_t x, uint16_t y) {
     if (y > ymax) ymax = y;
 }
 
+void ST7735S_fillScreen(void) {
+#if BUFFER
+
+    for(uint16_t y = 0; y < HEIGHT; y++)
+        for(uint16_t x = 0; x < WIDTH; x++)
+            ST7735S_Pixel(x,y);
+    ST7735S_flush();
+
+#else
+    uint8_t cmd[] = { RAMWR };
+    color565_t buffer[WIDTH];
+    for(uint16_t x = 0; x < WIDTH; x++)
+        buffer[x] = color;
+
+    Pin_CS_Low();
+
+    for (uint16_t y = 0; y < HEIGHT; y ++) {
+        uint8_t c1[] = { CASET, 0 >> 8, 0, WIDTH >> 8, WIDTH };
+        uint8_t c2[] = { RASET, y >> 8, y, y >> 8, y };
+        SPI_Transmit(sizeof(c1), c1);
+        SPI_Transmit(sizeof(c2), c2);
+        SPI_TransmitCmd(1, cmd);
+        SPI_TransmitData( WIDTH * sizeof(color565_t), (uint8_t *)&buffer);
+    }
+#endif
+}
+
+
 void ST7735S_Init(void) {
 
     cInit();
 
     /* backlight */
-    Pin_BLK_Pct(100);
+    // Pin_BLK_Pct(100);
 
     /* hard reset */
     Pin_RES_High();
@@ -165,9 +193,7 @@ void ST7735S_Init(void) {
     initCommands();
 
     /* clear screen */
-    xmin = 0; xmax = WIDTH-1;
-    ymin = 0; ymax = HEIGHT-1;
-    ST7735S_flush();
+    ST7735S_fillScreen();
 }
 
 bool ST7735S_flush(void)
@@ -189,7 +215,7 @@ bool ST7735S_flush(void)
         for (uint16_t y = ymin; y <= ymax; y++)
             SPI_TransmitData(len, (uint8_t *)&frame[WIDTH*y+xmin]);
 #else
-        SPI_TransmitData( 3, (uint8_t *)&frame[0]);
+        SPI_TransmitData( 2, (uint8_t *)&frame[0]);
 #endif
         // ST7735S_Idle(ON);
         Pin_CS_High();

@@ -6,11 +6,12 @@
 void setPixel(uint16_t x, uint16_t y) {
      ST7735S_Pixel(x, y);
 }
+void setbgPixel(uint16_t x, uint16_t y) {
+     ST7735S_bgPixel(x, y);
+}
 
 void fillScreen(void) {
-    for (uint16_t y = 0; y < HEIGHT; y++)
-        for (uint16_t x = 0; x < WIDTH; x++)
-            ST7735S_Pixel(x,y);
+    ST7735S_fillScreen();
 }
 
 /******************************************************************************
@@ -115,8 +116,7 @@ void drawCircle(uint16_t xc, uint16_t yc, uint16_t r) {
 
 /******************************************************************************
      Fonts
- ******************************************************************************
-*/
+*******************************************************************************/
 
 typedef struct {
     uint16_t first;
@@ -148,8 +148,8 @@ void setFont(uint8_t *f) {
 
     pfont.gi = (glyph_info_t *)f;
     for(i = 0; (uint8_t)pfont.gi->range[i].first != 0 || i == 0; i++);
-    pfont.glyphs = (uint8_t *)f + sizeof(glyph_info_t) + i*sizeof(ch_range_t) +
-            sizeof(uint8_t);
+    pfont.glyphs = (uint8_t *)f + sizeof(glyph_info_t) + 
+                i*sizeof(ch_range_t) + sizeof(uint8_t);
 }
 
 uint8_t *_lookupGlyph(uint16_t glyph) {
@@ -199,6 +199,10 @@ void drawText(uint16_t x, uint16_t y, char *t) {
         x += pfont.gi->bbox.width;
     }
 }
+
+/******************************************************************************
+     Colors
+*******************************************************************************/
 
 void setColor(color565_t c) {
     // lsb setting
