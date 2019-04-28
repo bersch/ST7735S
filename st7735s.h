@@ -15,6 +15,7 @@
 
 /* undef if low on mem */
 #if !defined (BUFFER) && !defined (BUFFER1) && !defined (HVBUFFER)
+  #warning no buffer defined, defining BUFFER1
   #define BUFFER1
 #endif
 

@@ -110,7 +110,6 @@ static uint8_t init_cmd[] = {
 };
 
 void initCommands(void) {
-
 	uint8_t args;
 
     Pin_CS_Low();
@@ -283,7 +282,6 @@ void set_hvpixel(uint16_t x, uint16_t y) {
 			updateWindow(x,y);
 			return;
 		}
-		// no adjacent pixel, flush and set new entry
         hvtype = VF;
         hvframe[xmin] = c1;
 		ST7735S_flush();
@@ -293,14 +291,13 @@ void set_hvpixel(uint16_t x, uint16_t y) {
 		updateWindow(x,y);
 		return;
 	}
-    // third pixel
+    // third+ pixel
 	if (hvtype == VF) { // horiz line
-		if (y == ymax && y == ymin && (x == xmin - 1 || x == xmax + 1)) {
+		if ( y == ymax && y == ymin && ( x >= xmin - 1 && x <= xmax + 1 )) { 
 			hvframe[x] = color;
 			updateWindow(x,y);
 			return;
 		}
-		// no adjacent pixel, flush and set new entry
 		ST7735S_flush();
 		
         hvtype = ONE;
@@ -309,12 +306,11 @@ void set_hvpixel(uint16_t x, uint16_t y) {
 		return;
 	}
 	if (hvtype == HF) { // vert line
-		if ( x == xmax && x == xmin && (y == ymin - 1 || y == ymax + 1)) {
+		if ( x == xmax && x == xmin && ( y >= ymin - 1 && x <= ymax + 1 )) {
 			hvframe[y] = color;
 			updateWindow(x,y);
 			return;
 		}
-		// no adjacent pixel, flush and set new entry
 		ST7735S_flush();
 
 		hvtype = ONE;
