@@ -32,9 +32,9 @@ Depending on the next pixel HVBUFFER acts like a row or column cache as long
 as following pixels are adjacent. If the next pixel is not adjacent, the
 cached pixels are flushed. Therefore the last action needs to be flushBuffer().
 
-However if you use Arduino on  Atmega328 compile with -DBUFFER=0 to 
+However if you use Arduino on  Atmega328 compile with -DBUFFER1 to 
 reduce memory usage. Perhaps HVBUFFER will work as well.
-With a STM32H743 are 90/s full buffer updates possible.
+On a STM32H743 are 90/s full buffer updates possible (-DBUFFER).
 
 This library uses the Terminus Font available at
 http://terminus-font.sourceforge.net/
