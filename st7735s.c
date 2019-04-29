@@ -291,7 +291,7 @@ void set_hvpixel(uint16_t x, uint16_t y) {
 		updateWindow(x,y);
 		return;
 	}
-    // third+ pixel
+        // third+ pixel
 	if (hvtype == VF) { // horiz line
 		if ( y == ymax && y == ymin && ( x >= xmin - 1 && x <= xmax + 1 )) { 
 			hvframe[x] = color;
