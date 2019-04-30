@@ -144,7 +144,7 @@ void resetWindow(void) {
 
 void updateWindow(uint16_t x, uint16_t y) {
 
-    if (x < WIDTH && x >= 0 && y < HEIGHT && y >= 0) {
+    if (x < WIDTH && y < HEIGHT) {
     if (x < xmin) xmin = x;
     if (x > xmax) xmax = x;
     if (y < ymin) ymin = y;
@@ -182,7 +182,7 @@ void ST7735S_Init(void) {
     cInit();
 
     /* backlight */
-    // Pin_BLK_Pct(100);
+    Pin_BLK_Pct(100);
 
     /* hard reset */
     Pin_RES_High();
@@ -238,7 +238,6 @@ void ST7735S_flush(void)
 #else
 #error buffer not defined.
 #endif
-        // ST7735S_Idle(ON);
         Pin_CS_High();
         resetWindow();
 }
@@ -282,8 +281,8 @@ void set_hvpixel(uint16_t x, uint16_t y) {
 			updateWindow(x,y);
 			return;
 		}
-        hvtype = VF;
-        hvframe[xmin] = c1;
+                hvtype = VF;
+                hvframe[xmin] = c1;
 		ST7735S_flush();
 
 		hvtype = ONE;
@@ -300,7 +299,7 @@ void set_hvpixel(uint16_t x, uint16_t y) {
 		}
 		ST7735S_flush();
 		
-        hvtype = ONE;
+                hvtype = ONE;
 		c1 = color;
 		updateWindow(x,y);
 		return;

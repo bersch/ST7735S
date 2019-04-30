@@ -34,7 +34,6 @@ cached pixels are flushed. Therefore the last action needs to be flushBuffer().
 
 However if you use Arduino on  Atmega328 compile with -DBUFFER1 to 
 reduce memory usage. Perhaps HVBUFFER will work as well.
-On a STM32H743 are 90/s full buffer updates possible (-DBUFFER).
 
 This library uses the Terminus Font available at
 http://terminus-font.sourceforge.net/
