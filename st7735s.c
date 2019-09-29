@@ -88,7 +88,7 @@ bool       bg_transparent = false;
 static uint8_t init_cmd[] = {
     1, SWRESET, /* software reset */
     1,  SLPOUT, /* sleep out, turn off sleep mode */
-	1, DISPOFF,  /*  output from frame mem disabled */
+    1, DISPOFF,  /*  output from frame mem disabled */
     4, FRMCTR1, 0x00, 0b111111, 0b111111, /* frame frequency normal mode (highest frame rate in normal mode) */
     4, FRMCTR2, 0b1111, 0x01, 0x01, /* frame frequency idle mode */
     7, FRMCTR3, 0x05, 0x3c, 0x3c, 0x05, 0x3c, 0x3c,  /* frame freq partial mode: 1-3 dot inv, 4-6 col inv */
@@ -101,7 +101,7 @@ static uint8_t init_cmd[] = {
     3,  PWCTR5, 0x8d, 0xee, /* partial */
 
 	/* display brightness and gamma */
-	2,  VMCTR1, 0,  /* VCOM voltage setting */
+    2,  VMCTR1, 0,  /* VCOM voltage setting */
     2, VMOFCTR, 0, /* ligthness of black color 0-0x1f */
     2,  GAMSET, 0x08, /* gamma 1, 2, 4, 8 */
 
@@ -109,10 +109,10 @@ static uint8_t init_cmd[] = {
     2,  COLMOD, 0x05, /* 3=12bit, 5=16-bit, 6=18-bit  pixel color mode */
 
     2, NVFCTR1, 0b01000000, /* automatic adjust gate pumping clock for saving power consumption */
-	2,     GCV, 0b11011000, /* auto gate pump freq, max power save */
+    2,     GCV, 0b11011000, /* auto gate pump freq, max power save */
 
-	5, CASET, 0, 0, 0, HEIGHT-1,
-	5, RASET, 0, 0, 0, WIDTH-1,
+    5, CASET, 0, 0, 0, HEIGHT-1,
+    5, RASET, 0, 0, 0, WIDTH-1,
     1,   INVON, /* display inversion on/off */
     1,  IDMOFF, /* idle mode off */
     1,   NORON,  /* normal display mode on */
@@ -213,8 +213,6 @@ void ST7735S_Init(void) {
 
 void ST7735S_flush(void)
 {
-
-
         Pin_CS_Low();
 
         uint16_t xm = xmin + XSTART, ym = ymin + YSTART;
@@ -227,7 +225,6 @@ void ST7735S_flush(void)
         SPI_Transmit(sizeof(c1), c1);
         SPI_Transmit(sizeof(c2), c2);
         SPI_TransmitCmd(1, c3);
-
 
 #if defined(BUFFER)
     #if 1

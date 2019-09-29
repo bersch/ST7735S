@@ -36,5 +36,4 @@ void _Delay(uint32_t d);
 #define _Pin_Low(name) LL_GPIO_ResetOutputPin(name ##_GPIO_Port, name ## _Pin);
 #endif
 
-
 #endif

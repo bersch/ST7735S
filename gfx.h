@@ -14,8 +14,6 @@ void setColor(color565_t);
 void setbgColor(color565_t);
 void setColorRGB(uint8_t, uint8_t, uint8_t);
 void setbgColorRGB(uint8_t, uint8_t, uint8_t);
-
-
 void filledCircle(uint16_t, uint16_t, uint16_t);
 void drawRect(uint16_t, uint16_t, uint16_t, uint16_t);
 #endif
