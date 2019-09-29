@@ -6,16 +6,13 @@ an OS independent library for the neat ST7735S 80x160 IPS 0.96" TFT-Module
 # Features
 
  * MIT License
- * OS independent
+ * portable
  * Implements: Pixel, fillScreen, Line, Circle, Color, Fonts
  * BDF-Font converter included (bdf2c.pl) 
  * super fast with buffered writes
  * great improvement on low mem with HVBUFFER
 
 Adapt this driver to your desired Platform by editng the st7735s_compat.c file.
-With the adapted file this driver may be used for: Arduino, PIC, ARM, Teensy,
-Raspberry Pi, compatibles like Banana Pi or Orange Pi and many others
-(for Big-Endian-Platforms the color setting shuould be modified).
 
 Buffered writes speeds up everything. Implemented are three buffer modes:
 
@@ -38,13 +35,10 @@ reduce memory usage. Perhaps HVBUFFER will work as well.
 This library uses the Terminus Font available at
 http://terminus-font.sourceforge.net/
 
-The display size is bigger than the tagged size of 80x160, mine is 106x161 pixels.
-You may modify st7735s.h and change WIDTH and HEIGHT to meet your requirements.
-
 In order to use your desired BDF-fonts use the ./tools/bdf2c.pl script.
 The bdf2c.pl script can only handle fonts with fixed width.
 
-The chars of a font can be limited by defining a range '0-9'.
+The chars of a font can be limited by defining a range i.e. '0-9'.
 
 # Wiring
 

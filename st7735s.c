@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "st7735s.h"
+#include "st7735s_compat.h"
 
 typedef enum {NOP       = 0x00,
               SWRESET   = 0x01, /* Software Reset */
@@ -69,11 +70,12 @@ color565_t frame[FRAMESIZE] = {0};
 #elif defined (HVBUFFER)
 color565_t hvframe[WIDTH] = {0};
 color565_t c1;
-typedef enum { HF, VF, ONE, UNDEF } hvtype_t;
-hvtype_t hvtype = UNDEF;
+typedef enum { HF, VF, ONE, NONE } hvtype_t;
+hvtype_t hvtype = NONE;
 #else
 #error buffer mode not defined
 #endif
+
 
 uint16_t xmin, xmax, ymin, ymax;
 
@@ -86,25 +88,33 @@ bool       bg_transparent = false;
 static uint8_t init_cmd[] = {
     1, SWRESET, /* software reset */
     1,  SLPOUT, /* sleep out, turn off sleep mode */
+	1, DISPOFF,  /*  output from frame mem disabled */
     4, FRMCTR1, 0x00, 0b111111, 0b111111, /* frame frequency normal mode (highest frame rate in normal mode) */
     4, FRMCTR2, 0b1111, 0x01, 0x01, /* frame frequency idle mode */
     7, FRMCTR3, 0x05, 0x3c, 0x3c, 0x05, 0x3c, 0x3c,  /* frame freq partial mode: 1-3 dot inv, 4-6 col inv */
     2,  INVCTR, 0x03, /* display inversion control: 3-bit 0=dot, 1=col */
-    4,  PWCTR1, 0x28, 0x08, 0x04, /* power control */
+
+    4,  PWCTR1, 0b11111100, 0x08, 0b10, /* power control */
     2,  PWCTR2, 0xc0,
     3,  PWCTR3, 0x0d, 0x00,
     3,  PWCTR4, 0x8d, 0x2a,
     3,  PWCTR5, 0x8d, 0xee, /* partial */
-    2,  VMCTR1, 0x1a, /* vcom voltage */
-    2,  MADCTL, 0b01100000, /* read write scanning direction */
+
+	/* display brightness and gamma */
+	2,  VMCTR1, 0,  /* VCOM voltage setting */
+    2, VMOFCTR, 0, /* ligthness of black color 0-0x1f */
+    2,  GAMSET, 0x08, /* gamma 1, 2, 4, 8 */
+
+    2,  MADCTL, 0b01100000, /* row oder, col order, row colum xchange, vert refr order, rgb/bgr, hor refr order, 0, 0 */
     2,  COLMOD, 0x05, /* 3=12bit, 5=16-bit, 6=18-bit  pixel color mode */
-    1,   INVON, /* display inversion on/off */
+
     2, NVFCTR1, 0b01000000, /* automatic adjust gate pumping clock for saving power consumption */
-    2, VMOFCTR, 0b11111, /* Set VCOM Voltage level for reduce the flicker issue */
-    5,   CASET, 0x00, 0x00, 0x00,  WIDTH-1, /* column (in frame mem) address set: 2 16bit values XS, XE */
-    5,   RASET, 0x00, 0x00, 0x00, HEIGHT-1, /* row (in frame mem) address set: 2 16bit values YS, YE */
-    2,  GAMSET, 0x02,
-    1,  IDMOFF,
+	2,     GCV, 0b11011000, /* auto gate pump freq, max power save */
+
+	5, CASET, 0, 0, 0, HEIGHT-1,
+	5, RASET, 0, 0, 0, WIDTH-1,
+    1,   INVON, /* display inversion on/off */
+    1,  IDMOFF, /* idle mode off */
     1,   NORON,  /* normal display mode on */
     1,  DISPON,  /* recover from display off, output from frame mem enabled */
 };
@@ -203,16 +213,21 @@ void ST7735S_Init(void) {
 
 void ST7735S_flush(void)
 {
-    uint8_t cmd[] = { RAMWR };
+
 
         Pin_CS_Low();
 
-        uint8_t c1[] = { CASET, xmin >> 8, xmin, xmax >> 8, xmax };
-        uint8_t c2[] = { RASET, ymin >> 8, ymin, ymax >> 8, ymax };
+        uint16_t xm = xmin + XSTART, ym = ymin + YSTART;
+        uint16_t xx = xmax + XSTART, yx = ymax + YSTART;
+
+        uint8_t c1[] = { CASET, xm >> 8, xm, xx >> 8, xx };
+        uint8_t c2[] = { RASET, ym >> 8, ym, yx >> 8, yx };
+        uint8_t c3[] = { RAMWR };
 
         SPI_Transmit(sizeof(c1), c1);
         SPI_Transmit(sizeof(c2), c2);
-        SPI_TransmitCmd(1, cmd);
+        SPI_TransmitCmd(1, c3);
+
 
 #if defined(BUFFER)
     #if 1
@@ -231,8 +246,11 @@ void ST7735S_flush(void)
         if (hvtype == HF) { // vert line
         uint16_t len  = (ymax-ymin+1)*2;
         SPI_TransmitData(len, (uint8_t *)&hvframe[ymin]);
+    } else
+    	if (hvtype == ONE) { // single pixel
+    		SPI_TransmitData(2, (uint8_t *)&c1);
     }
-    hvtype = UNDEF;
+    hvtype = NONE;
 #elif defined(BUFFER1)
         SPI_TransmitData( 2, (uint8_t *)&frame[0]);
 #else
@@ -259,7 +277,8 @@ void ST7735S_bgPixel(uint16_t x, uint16_t y) {
 #elif defined(HVBUFFER)
 void set_hvpixel(uint16_t x, uint16_t y) {
 	// first pixel
-	if (hvtype == UNDEF) {
+	if (hvtype == NONE) {
+first_pixel:
 		c1 = color;
 		hvtype = ONE;
 		updateWindow(x,y);
@@ -281,14 +300,8 @@ void set_hvpixel(uint16_t x, uint16_t y) {
 			updateWindow(x,y);
 			return;
 		}
-                hvtype = VF;
-                hvframe[xmin] = c1;
 		ST7735S_flush();
-
-		hvtype = ONE;
-		c1 = color;
-		updateWindow(x,y);
-		return;
+        goto first_pixel;
 	}
         // third+ pixel
 	if (hvtype == VF) { // horiz line
@@ -298,24 +311,16 @@ void set_hvpixel(uint16_t x, uint16_t y) {
 			return;
 		}
 		ST7735S_flush();
-		
-                hvtype = ONE;
-		c1 = color;
-		updateWindow(x,y);
-		return;
+        goto first_pixel;
 	}
 	if (hvtype == HF) { // vert line
-		if ( x == xmax && x == xmin && ( y >= ymin - 1 && x <= ymax + 1 )) {
+		if ( x == xmax && x == xmin && ( y >= ymin - 1 && y <= ymax + 1 )) {
 			hvframe[y] = color;
 			updateWindow(x,y);
 			return;
 		}
 		ST7735S_flush();
-
-		hvtype = ONE;
-		c1 = color;
-		updateWindow(x,y);
-		return;
+        goto first_pixel;
 	}
 }
 

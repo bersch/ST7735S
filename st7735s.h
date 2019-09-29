@@ -7,11 +7,6 @@
 
 #include "st7735s_compat.h"
 
-/* this may differ from the default 80x160 */
-#define WIDTH  161
-#define HEIGHT 106
-
-#define HVBUFFER 1
 
 /* undef if low on mem */
 #if !defined (BUFFER) && !defined (BUFFER1) && !defined (HVBUFFER)
@@ -25,9 +20,9 @@ typedef enum { ON, OFF } idlemode_t;
 typedef struct  {
     union {
         struct  {
-            uint8_t r:5;
-            uint8_t g:6;
-            uint8_t b:5;
+            uint16_t r:5;
+            uint16_t g:6;
+            uint16_t b:5;
         } __attribute__((packed));
         uint8_t u[2];
         uint16_t u16;

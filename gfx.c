@@ -89,7 +89,6 @@ void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
       _LineHigh(x0, y0, x1, y1);
 }
 
-
 void plot8CirclePoints(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
 
     ST7735S_Pixel(x1+x0, y1+y0);
@@ -117,6 +116,25 @@ void drawCircle(uint16_t xc, uint16_t yc, uint16_t r) {
             {  y++; err += 2*y + 1; }
     }
 }
+
+/******************************************************************************
+     additional
+*******************************************************************************/
+
+
+void filledCircle(uint16_t x, uint16_t y, uint16_t r) {
+    for(int i = 0; i <= r; i++)
+        drawCircle(x, y, i);
+}
+
+void drawRect(uint16_t x, uint16_t y, uint16_t x2, uint16_t y2) {
+	drawLine(x, y, x2, y);
+	drawLine(x, y2, x2, y2);
+	drawLine(x, y, x, y2);
+	drawLine(x2, y, x2, y2);
+}
+
+
 
 /******************************************************************************
      Fonts
@@ -182,7 +200,8 @@ void drawGlyph(uint16_t xx, uint16_t yy, uint16_t c) {
 
     for(uint8_t h = 0; h < pfont.gi->pixel_size; h++) {
         uint8_t row;
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         for (uint8_t x = 0; x < pfont.gi->bbox.width; x++) {
             if (x % 8 == 0)
                 row = *glyph++;
@@ -193,6 +212,7 @@ void drawGlyph(uint16_t xx, uint16_t yy, uint16_t c) {
                     ST7735S_bgPixel(xx+x, yy+h);
                 }
             }
+#pragma GCC diagnostic pop
         }
     }
 }
