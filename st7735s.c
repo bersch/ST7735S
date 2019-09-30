@@ -69,7 +69,7 @@ color565_t frame[FRAMESIZE] = {0};
 color565_t frame[FRAMESIZE] = {0};
 #elif defined (HVBUFFER)
 color565_t hvframe[WIDTH] = {0};
-color565_t c1;
+color565_t hvcolor1;
 typedef enum { HF, VF, ONE, NONE } hvtype_t;
 hvtype_t hvtype = NONE;
 #else
@@ -218,13 +218,13 @@ void ST7735S_flush(void)
         uint16_t xm = xmin + XSTART, ym = ymin + YSTART;
         uint16_t xx = xmax + XSTART, yx = ymax + YSTART;
 
-        uint8_t c1[] = { CASET, xm >> 8, xm, xx >> 8, xx };
-        uint8_t c2[] = { RASET, ym >> 8, ym, yx >> 8, yx };
-        uint8_t c3[] = { RAMWR };
+        uint8_t cas[] = { CASET, xm >> 8, xm, xx >> 8, xx };
+        uint8_t ras[] = { RASET, ym >> 8, ym, yx >> 8, yx };
+        uint8_t ram[] = { RAMWR };
 
-        SPI_Transmit(sizeof(c1), c1);
-        SPI_Transmit(sizeof(c2), c2);
-        SPI_TransmitCmd(1, c3);
+        SPI_Transmit(sizeof(cas), cas);
+        SPI_Transmit(sizeof(ras), ras);
+        SPI_TransmitCmd(1, ram);
 
 #if defined(BUFFER)
     #if 1
@@ -245,7 +245,7 @@ void ST7735S_flush(void)
         SPI_TransmitData(len, (uint8_t *)&hvframe[ymin]);
     } else
     	if (hvtype == ONE) { // single pixel
-    		SPI_TransmitData(2, (uint8_t *)&c1);
+    		SPI_TransmitData(2, (uint8_t *)&hvcolor1);
     }
     hvtype = NONE;
 #elif defined(BUFFER1)
@@ -276,7 +276,7 @@ void set_hvpixel(uint16_t x, uint16_t y) {
 	// first pixel
 	if (hvtype == NONE) {
 first_pixel:
-		c1 = color;
+		hvcolor1 = color;
 		hvtype = ONE;
 		updateWindow(x,y);
 		return;
@@ -285,14 +285,14 @@ first_pixel:
 	if (hvtype == ONE) {
 		if (y == ymax && y == ymin && (x == xmin - 1 || x == xmax + 1))  {
 			hvtype = VF;
-			hvframe[xmin] = c1;
+			hvframe[xmin] = hvcolor1;
 			hvframe[x] = color;
 			updateWindow(x,y);
 			return;
 		}
 		if (x == xmax && x == xmin && (y == ymin - 1 || y == ymax + 1)) {
 			hvtype = HF;
-			hvframe[ymin] = c1;
+			hvframe[ymin] = hvcolor1;
 			hvframe[y] = color;
 			updateWindow(x,y);
 			return;
