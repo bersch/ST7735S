@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include "utils.h"
 #include "st7735s_compat.h"
 
 
