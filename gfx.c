@@ -21,7 +21,7 @@ void flushBuffer(void) {
 /******************************************************************************
      Line+Circle // Bresenham's algorithm
  ******************************************************************************
-*/
+ */
 
 void _LineLow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
 
@@ -118,9 +118,8 @@ void drawCircle(uint16_t xc, uint16_t yc, uint16_t r) {
 }
 
 /******************************************************************************
-     additional
-*******************************************************************************/
-
+  additional routines
+ *******************************************************************************/
 
 void filledCircle(uint16_t x, uint16_t y, uint16_t r) {
     for(int i = 0; i <= r; i++)
@@ -134,9 +133,19 @@ void drawRect(uint16_t x, uint16_t y, uint16_t x2, uint16_t y2) {
 	drawLine(x2, y, x2, y2);
 }
 
+void filledRect(uint16_t x, uint16_t y, uint16_t x2, uint16_t y2) {
+
+    if (x > x2) { uint16_t tmp = x; x = x2; x2 = tmp; }
+    if (y > y2) { uint16_t tmp = y; y = y2; y2 = tmp; }
+
+    while (x < x2 && y < y2)
+        drawRect(x, y, x2--, y2--);
+
+}
+
 /******************************************************************************
      Fonts
-*******************************************************************************/
+ *******************************************************************************/
 
 typedef struct {
     uint16_t first;
@@ -224,22 +233,27 @@ void drawText(uint16_t x, uint16_t y, char *t) {
 
 /******************************************************************************
      Colors
-*******************************************************************************/
+ *******************************************************************************/
 
-void setColor(color565_t c) {
-    // lsb setting
-    color.u16 = (c.g << 6 | c.r) << 8 | (c.b << 3 | c.g >> 3);
+void setColorRaw(color565_t c) {
+    // color.u16 = __builtin_bswap16(c.u16);
+    // color.u16 = (c.g << 6 | c.r) << 8 | (c.b << 3 | c.g >> 3);
+    color.u[0] = c.u[1];
+    color.u[1] = c.u[0];
 }
 
-void setbgColor(color565_t c) {
-    // lsb setting
-    bg_color.u16 = (c.g << 6 | c.r) << 8 | (c.b << 3 | c.g >> 3);
+void setbgColorRaw(color565_t c) {
+    // bg_color.u16 = __builtin_bswap16(c.u16);
+    // bg_color.u16 = (c.g << 6 | c.r) << 8 | (c.b << 3 | c.g >> 3);
+    // bg_color.u16 = c.u[0] << 8 | c.u[1];
+    bg_color.u[0] = c.u[1];
+    bg_color.u[1] = c.u[0];
 }
 
-void setColorRGB(uint8_t r, uint8_t g, uint8_t b) {
-    setColor((color565_t){ .r = r, .g = g, .b = b });
+void setColor(uint8_t r, uint8_t g, uint8_t b) {
+    setColorRaw((color565_t){ .r = r, .g = g, .b = b });
 }
-void setbgColorRGB(uint8_t r, uint8_t g, uint8_t b) {
-    setbgColor((color565_t){ .r = r, .g = g, .b = b });
+void setbgColor(uint8_t r, uint8_t g, uint8_t b) {
+    setbgColorRaw((color565_t){ .r = r, .g = g, .b = b });
 }
 

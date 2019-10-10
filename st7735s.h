@@ -7,7 +7,6 @@
 
 #include "st7735s_compat.h"
 
-
 /* undef if low on mem */
 #if !defined (BUFFER) && !defined (BUFFER1) && !defined (HVBUFFER)
   #warning no buffer defined, defining BUFFER1
@@ -43,5 +42,7 @@ void ST7735S_bgPixel(uint16_t x, uint16_t y);
 void setOrientation(rotation_t r);
 void setTransparent(bool);
 void ST7735S_fillScreen(void);
-
+void ST7735S_sleepIn(void);
+void ST7735S_sleepOut(void);
 #endif
+

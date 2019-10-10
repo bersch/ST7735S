@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include <string.h>
 #include "st7735s.h"
 #include "st7735s_compat.h"
 
@@ -55,8 +54,8 @@ typedef enum {NOP       = 0x00,
               NVFCTR1   = 0xd9, /* NVM Control Status */
               NVFCTR2   = 0xde, /* NVM Read Command */
               NVFCTR3   = 0xdf, /* NVM Write Command */
-              GMCTRP1   = 0xe0, /* Gamma '+'Polarity Correctio Characteristics Setting */
-              GMCTRN1   = 0xe1, /* Gamma '-'Polarity Correctio Characteristics Setting */
+              GMCTRP1   = 0xe0, /* Gamma '+'Polarity Correction Characteristics Setting */
+              GMCTRN1   = 0xe1, /* Gamma '-'Polarity Correction Characteristics Setting */
               GCV       = 0xfc, /* Gate Pump Clock Frequency Variable */
 } ST7735S_Command;
 
@@ -101,16 +100,18 @@ static uint8_t init_cmd[] = {
     3,  PWCTR5, 0x8d, 0xee, /* partial */
 
 	/* display brightness and gamma */
-    2,  VMCTR1, 0,  /* VCOM voltage setting */
-    2, VMOFCTR, 0, /* ligthness of black color 0-0x1f */
+    2,     GCV, 0b11011000, /* auto gate pump freq, max power save */
+    2, NVFCTR1, 0b01000000, /* automatic adjust gate pumping clock for saving power consumption */
+	2,  VMCTR1, 0b001111,  /* VCOM voltage setting */
+    2, VMOFCTR, 0b10000, /* ligthness of black color 0-0x1f */
     2,  GAMSET, 0x08, /* gamma 1, 2, 4, 8 */
 
     2,  MADCTL, 0b01100000, /* row oder, col order, row colum xchange, vert refr order, rgb/bgr, hor refr order, 0, 0 */
     2,  COLMOD, 0x05, /* 3=12bit, 5=16-bit, 6=18-bit  pixel color mode */
-
-    2, NVFCTR1, 0b01000000, /* automatic adjust gate pumping clock for saving power consumption */
-    2,     GCV, 0b11011000, /* auto gate pump freq, max power save */
-
+    17, GMCTRP1,0x02, 0x1c, 0x07, 0x12, 0x37, 0x32, 0x29, 0x2c,
+                0x29, 0x25, 0x2b, 0x39, 0x00, 0x01, 0x03, 0x10,
+    17, GMCTRN1,0x03, 0x1d, 0x07, 0x06, 0x2E, 0x2C, 0x29, 0x2c,
+                0x2e, 0x2e, 0x37, 0x3f, 0x00, 0x00, 0x02, 0x10,
     5, CASET, 0, 0, 0, HEIGHT-1,
     5, RASET, 0, 0, 0, WIDTH-1,
     1,   INVON, /* display inversion on/off */
@@ -122,13 +123,28 @@ static uint8_t init_cmd[] = {
 void initCommands(void) {
 	uint8_t args;
 
-    Pin_CS_Low();
     for(uint16_t i = 0; i < sizeof(init_cmd); i+=args+1) {
         args = init_cmd[i];
 
         SPI_Transmit(args, &init_cmd[i+1]);
     }
-    Pin_CS_High();
+}
+
+uint8_t backlight_pct;
+
+void ST7735S_sleepIn(void) {
+
+    uint8_t pct = backlight_pct;
+    Pin_BLK_Pct(0);
+    backlight_pct = pct;
+    uint8_t cmd[] = { DISPOFF, SLPIN };
+    SPI_TransmitCmd(2, cmd);
+}
+
+void ST7735S_sleepOut(void) {
+    Pin_BLK_Pct(backlight_pct);
+    uint8_t cmd[] = { SLPOUT, DISPON };
+    SPI_TransmitCmd(2, cmd);
 }
 
 void setOrientation(rotation_t r) {
@@ -139,9 +155,8 @@ void setOrientation(rotation_t r) {
         case R180: cmd[1] = 0b10100000; break;
         case R270: cmd[1] = 0b01000000; break;
     }
-    Pin_CS_Low();
+
     SPI_Transmit( 2, cmd);
-    Pin_CS_High();
 }
 
 void setTransparent(bool t) {
@@ -173,8 +188,6 @@ void ST7735S_fillScreen(void) {
     color565_t buffer[WIDTH];
     for(uint16_t x = 0; x < WIDTH; x++)
         buffer[x] = color;
-
-    Pin_CS_Low();
 
     for (uint16_t y = 0; y < HEIGHT; y ++) {
         uint8_t c1[] = { CASET, 0 >> 8, 0, WIDTH >> 8, WIDTH };
@@ -213,8 +226,6 @@ void ST7735S_Init(void) {
 
 void ST7735S_flush(void)
 {
-        Pin_CS_Low();
-
         uint16_t xm = xmin + XSTART, ym = ymin + YSTART;
         uint16_t xx = xmax + XSTART, yx = ymax + YSTART;
 
@@ -253,7 +264,6 @@ void ST7735S_flush(void)
 #else
 #error buffer not defined.
 #endif
-        Pin_CS_High();
         resetWindow();
 }
 
@@ -361,4 +371,3 @@ void Delay(uint32_t d) {
 void Backlight_Pct(uint8_t p) {
         Pin_BLK_Pct(p % 101);
 }
-
