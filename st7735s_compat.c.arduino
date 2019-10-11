@@ -5,12 +5,12 @@
 uint32_t tim_period = 32768;
 uint32_t tim_pulse;
 
-#define CS_PIN
-#define RES_PIN
-#define DC_PIN
-#define MOSI_PIN
-#define SCK_PIN
-#define BL_PIN
+#define CS_PIN 0
+#define RES_PIN 0
+#define DC_PIN 0
+#define MOSI_PIN 0
+#define SCK_PIN 0
+#define BLK_PIN 0
 
 void cInit(void) {
     pinMode(CS_PIN, OUTPUT);
