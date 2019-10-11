@@ -183,7 +183,7 @@ $arraysize += 5; # pixel_size bbox
 
 print OH  "#ifdef __cplusplus\n";
 print OH  "#extern \"C\" {\n";
-print OH  "extern uint8_t $basename", "[",  $arraysize, "];\n\n";
+print OH  "extern uint8_t $basename", "[",  $arraysize, "];\n";
 print OH  "}\n";
 print OH  "#endif\n\n";
 print OC  "uint8_t $basename", "[",  $arraysize, "] = { \n";

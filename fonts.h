@@ -14,7 +14,6 @@
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u12b[1150];
-
 }
 #endif
 
@@ -34,7 +33,6 @@ extern uint8_t ter_u12b[1150];
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u12n[1150];
-
 }
 #endif
 
@@ -54,7 +52,6 @@ extern uint8_t ter_u12n[1150];
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u14b[1340];
-
 }
 #endif
 
@@ -74,7 +71,6 @@ extern uint8_t ter_u14b[1340];
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u14n[1340];
-
 }
 #endif
 
@@ -94,7 +90,6 @@ extern uint8_t ter_u14n[1340];
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u14v[1340];
-
 }
 #endif
 
@@ -114,7 +109,6 @@ extern uint8_t ter_u14v[1340];
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u16b[1530];
-
 }
 #endif
 
@@ -134,7 +128,6 @@ extern uint8_t ter_u16b[1530];
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u16n[1530];
-
 }
 #endif
 
@@ -154,7 +147,6 @@ extern uint8_t ter_u16n[1530];
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u16v[1530];
-
 }
 #endif
 
@@ -174,7 +166,6 @@ extern uint8_t ter_u16v[1530];
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u18b[3430];
-
 }
 #endif
 
@@ -194,7 +185,6 @@ extern uint8_t ter_u18b[3430];
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u18n[3430];
-
 }
 #endif
 
@@ -214,7 +204,6 @@ extern uint8_t ter_u18n[3430];
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u20b[3810];
-
 }
 #endif
 
@@ -234,7 +223,6 @@ extern uint8_t ter_u20b[3810];
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u20n[3810];
-
 }
 #endif
 
@@ -254,7 +242,6 @@ extern uint8_t ter_u20n[3810];
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u22b[4190];
-
 }
 #endif
 
@@ -274,7 +261,6 @@ extern uint8_t ter_u22b[4190];
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u22n[4190];
-
 }
 #endif
 
@@ -294,7 +280,6 @@ extern uint8_t ter_u22n[4190];
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u24b[4570];
-
 }
 #endif
 
@@ -314,7 +299,6 @@ extern uint8_t ter_u24b[4570];
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u24n[4570];
-
 }
 #endif
 
@@ -334,7 +318,6 @@ extern uint8_t ter_u24n[4570];
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u28b[5330];
-
 }
 #endif
 
@@ -354,7 +337,6 @@ extern uint8_t ter_u28b[5330];
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u28n[5330];
-
 }
 #endif
 
@@ -374,7 +356,6 @@ extern uint8_t ter_u28n[5330];
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u32b[6090];
-
 }
 #endif
 
@@ -394,7 +375,6 @@ extern uint8_t ter_u32b[6090];
 #ifdef __cplusplus
 #extern "C" {
 extern uint8_t ter_u32n[6090];
-
 }
 #endif
 
