@@ -28,6 +28,9 @@ typedef struct  {
     };
 } __attribute__((packed)) color565_t;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern color565_t color;
 extern color565_t bg_color;
@@ -44,5 +47,11 @@ void setTransparent(bool);
 void ST7735S_fillScreen(void);
 void ST7735S_sleepIn(void);
 void ST7735S_sleepOut(void);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
+
 #endif
 

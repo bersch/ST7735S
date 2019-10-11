@@ -122,7 +122,7 @@ void drawCircle(uint16_t xc, uint16_t yc, uint16_t r) {
  *******************************************************************************/
 
 void filledCircle(uint16_t x, uint16_t y, uint16_t r) {
-    for(int i = 0; i <= r; i++)
+    for(uint16_t i = 0; i <= r; i++)
         drawCircle(x, y, i);
 }
 

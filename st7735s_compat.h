@@ -13,6 +13,10 @@
 /* #define BUFFER1 */
 #define HVBUFFER
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void cInit(void);
 void Pin_CS_Low(void);
 void Pin_CS_High(void);
@@ -27,4 +31,7 @@ void SPI_TransmitData(uint16_t len, uint8_t *data);
 void SPI_Transmit(uint16_t len, uint8_t *data);
 void _Delay(uint32_t d);
 
+#ifdef __cplusplus
+} // extern "C"
+#endif
 #endif
