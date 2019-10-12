@@ -121,9 +121,24 @@ void drawCircle(uint16_t xc, uint16_t yc, uint16_t r) {
   additional routines
  *******************************************************************************/
 
-void filledCircle(uint16_t x, uint16_t y, uint16_t r) {
-    for(uint16_t i = 0; i <= r; i++)
-        drawCircle(x, y, i);
+void filledCircle(uint16_t xc, uint16_t yc, uint16_t r) {
+
+    int16_t x, y, err;
+
+    x = r; y = err = 0;
+
+    while (x >= y) {
+
+        drawLine(xc-x,yc-y,xc+x,yc-y);
+        drawLine(xc-x,yc+y,xc+x,yc+y);
+        drawLine(xc-y,yc+x,xc+y,yc+x);
+        drawLine(xc-y,yc-x,xc+y,yc-x);
+
+        if ( err > 0)
+        {  x--; err -= 2*x + 1; }
+        else
+        {  y++; err += 2*y + 1; }
+    }
 }
 
 void drawRect(uint16_t x, uint16_t y, uint16_t x2, uint16_t y2) {
