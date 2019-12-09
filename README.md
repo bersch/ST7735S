@@ -42,13 +42,13 @@ The chars of a font can be limited by defining a range i.e. '0-9'.
 
 # Quick Steps
 
-Copy ´st7735s_compat.h.default´  and ´st7735s_compat.cpp.Arduino´ to your project dir and rename them to .h and .cpp.
-Edit the files and modify for your needs. Link to ST7735S library.
-You'll need to insert those includes
+Copy `st7735s_compat.h.default`  and `st7735s_compat.cpp.arduino` to your project dir and rename them to `.h` and `.cpp`. Edit those files and modify them for your needs. Link to ST7735S library.
+You'll need to insert also includes
+```
 #include "st7735s.h"
 #include "fonts.h"
 #include "gfx.h"
-
+```
 
 
 # Wiring
