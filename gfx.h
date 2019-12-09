@@ -5,11 +5,6 @@
 extern "C" {
 #endif
 
-#define C_Gray50 0x808080
-#define C_Gray40 0x606060
-#define C_Gray25 0x404040
-#define C_Red50  0x400000
-
 void setPixel(uint16_t, uint16_t);
 /* background pixel used for font draw */
 void setbgPixel(uint16_t, uint16_t);
