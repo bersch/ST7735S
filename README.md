@@ -21,16 +21,16 @@ Buffered writes speeds up everything. Implemented are three buffer modes:
     row or column buffer. 
  * `BUFFER`   - full frame WIDTH * HEIGHT * 2 bytes size. very fast.
 
-The HVBUFFER is based on the fact, that due to design of the ST7735 to write
+The `HVBUFFER` is based on the fact, that due to design of the ST7735 to write
 a single pixel one need to write 13 bytes on the SPI bus. For two bytes that are
 adjacent in horizonal or vertical direction one need to write 15 bytes.
-HVBUFFER stores one pixel and checks if the following pixel is adjacent.
-Depending on the next pixel HVBUFFER acts like a row or column cache as long
+`HVBUFFER` stores one pixel and checks if the following pixel is adjacent.
+Depending on the next pixel `HVBUFFER` acts like a row or column cache as long
 as following pixels are adjacent. If the next pixel is not adjacent, the
 cached pixels are flushed. Therefore the last action needs to be `flushBuffer()`.
 
 However if you use Arduino on  Atmega328 compile with `-DBUFFER1` to 
-reduce memory usage. Perhaps HVBUFFER will work as well.
+reduce memory usage. Perhaps `HVBUFFER` will work as well.
 
 This library uses the Terminus Font available at
 http://terminus-font.sourceforge.net/
