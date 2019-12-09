@@ -12,7 +12,7 @@ an OS independent library for the neat ST7735S 80x160 IPS 0.96" TFT-Module
  * super fast with buffered writes
  * great improvement on low mem with HVBUFFER
 
-Adapt this driver to your desired Platform by editng the st7735s_compat.c file.
+Adapt this driver to your desired Platform by editng the `st7735s_compat.c` file.
 
 Buffered writes speeds up everything. Implemented are three buffer modes:
 
@@ -43,7 +43,7 @@ The chars of a font can be limited by defining a range i.e. '0-9'.
 # Quick Steps
 
 Copy `st7735s_compat.h.default`  and `st7735s_compat.cpp.arduino` to your project dir and rename them to `.h` and `.cpp`. Edit those files and modify them for your needs. Link to ST7735S library.
-You'll need to insert also includes
+You'll need to insert also includes to your code
 ```
 #include "st7735s.h"
 #include "fonts.h"
