@@ -16,10 +16,10 @@ Adapt this driver to your desired Platform by editng the `st7735s_compat.c` file
 
 Buffered writes speeds up everything. Implemented are three buffer modes:
 
- * BUFFER1  - actually no buffered writes, slow, for limited ram.
- * HVBUFFER - one line buffer with WIDTH * 2 bytes size. Acts as for either
+ * `BUFFER1`  - actually no buffered writes, slow, for limited ram.
+ * `HVBUFFER` - one line buffer with WIDTH * 2 bytes size. Acts as for either
     row or column buffer. 
- * BUFFER   - full frame WIDTH * HEIGHT * 2 bytes size. very fast.
+ * `BUFFER`   - full frame WIDTH * HEIGHT * 2 bytes size. very fast.
 
 The HVBUFFER is based on the fact, that due to design of the ST7735 to write
 a single pixel one need to write 13 bytes on the SPI bus. For two bytes that are
@@ -27,15 +27,15 @@ adjacent in horizonal or vertical direction one need to write 15 bytes.
 HVBUFFER stores one pixel and checks if the following pixel is adjacent.
 Depending on the next pixel HVBUFFER acts like a row or column cache as long
 as following pixels are adjacent. If the next pixel is not adjacent, the
-cached pixels are flushed. Therefore the last action needs to be flushBuffer().
+cached pixels are flushed. Therefore the last action needs to be `flushBuffer()`.
 
-However if you use Arduino on  Atmega328 compile with -DBUFFER1 to 
+However if you use Arduino on  Atmega328 compile with `-DBUFFER1` to 
 reduce memory usage. Perhaps HVBUFFER will work as well.
 
 This library uses the Terminus Font available at
 http://terminus-font.sourceforge.net/
 
-In order to use your desired BDF-fonts use the ./tools/bdf2c.pl script.
+In order to use your desired BDF-fonts use the `./tools/bdf2c.pl` script.
 The bdf2c.pl script can only handle fonts with fixed width.
 
 The chars of a font can be limited by defining a range i.e. '0-9'.
@@ -53,6 +53,7 @@ You'll need to insert also includes to your code
 
 # Wiring
 
+```
    MODULE                   MCU 
    ------                   ---
            \              /
@@ -73,7 +74,7 @@ You'll need to insert also includes to your code
     BLK    |<-------------| Backlight (PWM)
            |              |
            /              \
-           
+```
 
  * Resources
 
