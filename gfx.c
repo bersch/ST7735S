@@ -3,11 +3,22 @@
 #include "fonts.h"
 #include "gfx.h"
 
+#ifndef abs
+#define abs(x) ( (x<0) ? -(x) : (x) )
+#endif
+
+/* transparent background for fonts */
+bool bg_transparent = false;
+
+void setTransparent(bool t) {
+    bg_transparent = t;
+}
+
 void setPixel(uint16_t x, uint16_t y) {
-     ST7735S_Pixel(x, y);
+    ST7735S_Pixel(x, y);
 }
 void setbgPixel(uint16_t x, uint16_t y) {
-     ST7735S_bgPixel(x, y);
+    ST7735S_bgPixel(x, y);
 }
 
 void fillScreen(void) {
@@ -19,9 +30,8 @@ void flushBuffer(void) {
 }
 
 /******************************************************************************
-     Line+Circle // Bresenham's algorithm
- ******************************************************************************
- */
+  Line+Circle // Bresenham's algorithm
+ ******************************************************************************/
 
 void _LineLow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
 
@@ -71,35 +81,40 @@ void _LineHigh(uint16_t x0,uint16_t y0, uint16_t x1, uint16_t y1) {
     }
 }
 
-#ifndef abs
-#define abs(x) ( (x<0) ? -(x) : (x) )
-#endif
-
 void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
 
-  if (abs(y1 - y0) < abs(x1 - x0)) {
-    if (x0 > x1) {
-      _LineLow(x1, y1, x0, y0);
-    } else {
-      _LineLow(x0, y0, x1, y1);
+    uint16_t abs_y = abs(y1 - y0);
+    uint16_t abs_x = abs(x1 - x0);
+
+    if (abs_y <= abs_x) {
+        if (x0 > x1)
+            _LineLow(x1, y1, x0, y0);
+        else
+            _LineLow(x0, y0, x1, y1);
     }
-  } else if (y0 > y1)
-      _LineHigh(x1, y1, x0, y0);
-    else
-      _LineHigh(x0, y0, x1, y1);
+    if (abs_y >= abs_x) {
+        if (y0 > y1)
+            _LineHigh(x1, y1, x0, y0);
+        else
+            _LineHigh(x0, y0, x1, y1);
+    }
 }
 
-void plot8CirclePoints(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
+/******************************************************************************
+  Circle
+ *******************************************************************************/
 
-    ST7735S_Pixel(x1+x0, y1+y0);
-    ST7735S_Pixel(x1+y0, y1+x0);
-    ST7735S_Pixel(x1-y0, y1+x0);
-    ST7735S_Pixel(x1-x0, y1+y0);
+void plot8CirclePoints(uint16_t xc, uint16_t yc, uint16_t x, uint16_t y) {
 
-    ST7735S_Pixel(x1-x0, y1-y0);
-    ST7735S_Pixel(x1-y0, y1-x0);
-    ST7735S_Pixel(x1+y0, y1-x0);
-    ST7735S_Pixel(x1+x0, y1-y0);
+    ST7735S_Pixel(xc+x, yc+y);
+    ST7735S_Pixel(xc+y, yc+x);
+    ST7735S_Pixel(xc-y, yc+x);
+    ST7735S_Pixel(xc-x, yc+y);
+
+    ST7735S_Pixel(xc-x, yc-y);
+    ST7735S_Pixel(xc-y, yc-x);
+    ST7735S_Pixel(xc+y, yc-x);
+    ST7735S_Pixel(xc+x, yc-y);
 }
 
 void drawCircle(uint16_t xc, uint16_t yc, uint16_t r) {
@@ -109,17 +124,13 @@ void drawCircle(uint16_t xc, uint16_t yc, uint16_t r) {
     x = r; y = err = 0;
 
     while (x >= y) {
-        plot8CirclePoints(x,y,xc,yc);
+        plot8CirclePoints(xc,yc,x,y);
         if ( err > 0)
-            {  x--; err -= 2*x + 1; }
+        {  x--; err -= 2*x + 1; }
         else
-            {  y++; err += 2*y + 1; }
+        {  y++; err += 2*y + 1; }
     }
 }
-
-/******************************************************************************
-  additional routines
- *******************************************************************************/
 
 void filledCircle(uint16_t xc, uint16_t yc, uint16_t r) {
 
@@ -141,11 +152,97 @@ void filledCircle(uint16_t xc, uint16_t yc, uint16_t r) {
     }
 }
 
+/******************************************************************************
+  Arc & Pie
+ *******************************************************************************/
+
+#define PI   3.141592654f
+#define PI4  PI/4.0
+#define PI34 PI*3.0/4.0
+
+float Atan2(int16_t x, int16_t y)
+{
+    float angle;
+    uint16_t abs_y = abs(y);
+
+    if (x>=0) {
+        angle = PI4  - ( PI4 * (1.0 * (x - abs_y) / (1.0 * (abs_y + x))) );
+    } else {
+        angle = PI34 - ( PI4 * (1.0 * (x + abs_y) / (1.0 * (abs_y - x))) );
+    }
+
+    angle = 180.0 * angle / PI;
+
+    return (y<0)?360.0-angle:angle;
+}
+
+bool isPie = false;
+uint16_t gxc, gyc;
+float    angle_from, angle_to;
+
+void CheckAngle(uint16_t x, uint16_t y) {
+
+    int16_t dx = x - gxc;
+    int16_t dy = y - gyc;
+
+    float angle = Atan2(dx,dy);
+
+    if (angle_from <= angle_to) {
+        if (angle >= angle_from && angle <= angle_to)
+            (isPie) ? drawLine(gxc, gyc, x, y) : ST7735S_Pixel(x, y);
+    } else {
+        if (angle <= angle_to || angle >= angle_from)
+            (isPie) ? drawLine(gxc, gyc, x, y) : ST7735S_Pixel(x, y);
+    }
+}
+
+void plot8ArcPoints(uint16_t xc, uint16_t yc, uint16_t x, uint16_t y) {
+
+    CheckAngle(xc+x, yc+y);
+    CheckAngle(xc+y, yc+x);
+    CheckAngle(xc-y, yc+x);
+    CheckAngle(xc-x, yc+y);
+
+    CheckAngle(xc-x, yc-y);
+    CheckAngle(xc-y, yc-x);
+    CheckAngle(xc+y, yc-x);
+    CheckAngle(xc+x, yc-y);
+}
+
+void drawArc(uint16_t xc, uint16_t yc, uint16_t r, float a_from, float a_to) {
+
+    int16_t x, y, err;
+
+    x = r; y = err = 0;
+    gxc = xc; gyc = yc;
+
+    angle_from = a_from; angle_to = a_to;
+
+    while (x >= y) {
+        plot8ArcPoints(xc,yc,x,y);
+        if ( err > 0)
+        {  x--; err -= 2*x + 1; }
+        else
+        {  y++; err += 2*y + 1; }
+    }
+}
+
+void drawPie(uint16_t xc, uint16_t yc, uint16_t r, float a_from, float a_to) {
+
+    isPie = true;
+    drawArc(xc, yc, r, a_from, a_to);
+    isPie = false;
+}
+
+/******************************************************************************
+  Rect
+ *******************************************************************************/
+
 void drawRect(uint16_t x, uint16_t y, uint16_t x2, uint16_t y2) {
-	drawLine(x, y, x2, y);
-	drawLine(x, y2, x2, y2);
-	drawLine(x, y, x, y2);
-	drawLine(x2, y, x2, y2);
+    drawLine(x,  y, x2,  y);
+    drawLine(x, y2, x2, y2);
+    drawLine(x,  y,  x, y2);
+    drawLine(x2, y, x2, y2);
 }
 
 void filledRect(uint16_t x, uint16_t y, uint16_t x2, uint16_t y2) {
@@ -153,13 +250,28 @@ void filledRect(uint16_t x, uint16_t y, uint16_t x2, uint16_t y2) {
     if (x > x2) { uint16_t tmp = x; x = x2; x2 = tmp; }
     if (y > y2) { uint16_t tmp = y; y = y2; y2 = tmp; }
 
-    while (x < x2 && y < y2)
-        drawRect(x, y, x2--, y2--);
-
+    /* fast ergonomic grid fill */
+    if ( abs(x - x2) < abs(y - y2) ) {
+        uint16_t xl = x2 - ((abs(x - x2) & 1) ? 0 : 1);
+        while (x < x2)  {
+            drawLine( x, y, x, y2 );
+            drawLine( xl, y, xl, y2 );
+            x+=2;
+            xl-=2;
+        }
+    } else {
+        uint16_t yl = y2 - ((abs(y - y2) & 1) ? 0 : 1);
+        while (y < y2)  {
+            drawLine( x, y, x2, y );
+            drawLine( x, yl, x2, yl );
+            y+=2;
+            yl-=2;
+        }
+    }
 }
 
 /******************************************************************************
-     Fonts
+  Fonts
  *******************************************************************************/
 
 typedef struct {
@@ -181,8 +293,8 @@ typedef struct {
 } __attribute__((packed)) glyph_info_t;
 
 typedef struct {
-        glyph_info_t *gi;
-        uint8_t  *glyphs;
+    glyph_info_t *gi;
+    uint8_t  *glyphs;
 } __attribute__((packed)) font_t;
 
 font_t pfont;
@@ -192,8 +304,8 @@ void setFont(uint8_t *f) {
 
     pfont.gi = (glyph_info_t *)f;
     for(i = 0; (uint8_t)pfont.gi->range[i].first != 0 || i == 0; i++);
-    pfont.glyphs = (uint8_t *)f + sizeof(glyph_info_t) + 
-                i*sizeof(ch_range_t) + sizeof(uint8_t);
+    pfont.glyphs = (uint8_t *)f + sizeof(glyph_info_t) +
+        i*sizeof(ch_range_t) + sizeof(uint8_t);
 }
 
 uint8_t *_lookupGlyph(uint16_t glyph) {
@@ -222,24 +334,21 @@ void drawGlyph(uint16_t xx, uint16_t yy, uint16_t c) {
 
     for(uint8_t h = 0; h < pfont.gi->pixel_size; h++) {
         uint8_t row;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         for (uint8_t x = 0; x < pfont.gi->bbox.width; x++) {
             if (x % 8 == 0)
                 row = *glyph++;
-            if (row & ( 1 << (7-(x%8)))) {
+            if (row & ( 1 << (7-(x % 8)))) {
                 ST7735S_Pixel(xx+x, yy+h);
             } else {
                 if (bg_transparent == false) {
                     ST7735S_bgPixel(xx+x, yy+h);
                 }
             }
-#pragma GCC diagnostic pop
         }
     }
 }
 
-void drawText(uint16_t x, uint16_t y, char *t) {
+void drawText(uint16_t x, uint16_t y, const char *t) {
     while (*t) {
         drawGlyph(x,y, *t++);
         x += pfont.gi->bbox.width;
@@ -247,17 +356,17 @@ void drawText(uint16_t x, uint16_t y, char *t) {
 }
 
 /******************************************************************************
-     Colors
+  Colors
  *******************************************************************************/
 
-void setColorRaw(color565_t c) {
+void setColorC(color565_t c) {
     // color.u16 = __builtin_bswap16(c.u16);
     // color.u16 = (c.g << 6 | c.r) << 8 | (c.b << 3 | c.g >> 3);
     color.u[0] = c.u[1];
     color.u[1] = c.u[0];
 }
 
-void setbgColorRaw(color565_t c) {
+void setbgColorC(color565_t c) {
     // bg_color.u16 = __builtin_bswap16(c.u16);
     // bg_color.u16 = (c.g << 6 | c.r) << 8 | (c.b << 3 | c.g >> 3);
     // bg_color.u16 = c.u[0] << 8 | c.u[1];
@@ -266,9 +375,27 @@ void setbgColorRaw(color565_t c) {
 }
 
 void setColor(uint8_t r, uint8_t g, uint8_t b) {
-    setColorRaw((color565_t){ .r = r, .g = g, .b = b });
+    setColorC((color565_t){ .r = r, .g = g, .b = b });
 }
+
 void setbgColor(uint8_t r, uint8_t g, uint8_t b) {
-    setbgColorRaw((color565_t){ .r = r, .g = g, .b = b });
+    setbgColorC((color565_t){ .r = r, .g = g, .b = b });
+}
+
+struct s_color {
+uint8_t  :8;
+          uint8_t r:8;
+          uint8_t g:8;
+          uint8_t b:8;
+};
+
+void setColor24(uint32_t _color) {
+    struct s_color *c = (struct s_color *)&_color;
+    setColorC((color565_t){ .r = c->r*32/256, .g = c->g*64/256, .b = c->b*32/256 });
+}
+
+void setbgColor24(uint32_t _color) {
+    struct s_color *c = (struct s_color *)&_color;
+    setbgColorC((color565_t){ .r = c->r*32/256, .g = c->g*64/256, .b = c->b*32/256 });
 }
 
