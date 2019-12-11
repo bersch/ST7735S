@@ -163,17 +163,17 @@ void filledCircle(uint16_t xc, uint16_t yc, uint16_t r) {
 float Atan2(int16_t x, int16_t y)
 {
     float angle;
-    uint16_t abs_y = abs(y);
+    uint16_t abs_x = abs(x);
 
-    if (x>=0) {
-        angle = PI4  - ( PI4 * (1.0 * (x - abs_y) / (1.0 * (abs_y + x))) );
+    if (y>=0) {
+        angle = PI4  - ( PI4 * (1.0 * (y - abs_x) / (1.0 * (abs_x + y))) );
     } else {
-        angle = PI34 - ( PI4 * (1.0 * (x + abs_y) / (1.0 * (abs_y - x))) );
+        angle = PI34 - ( PI4 * (1.0 * (y + abs_x) / (1.0 * (abs_x - y))) );
     }
 
     angle = 180.0 * angle / PI;
 
-    return (y<0)?360.0-angle:angle;
+    return (x<0) ? 180.0+angle:180.0-angle; 
 }
 
 bool isPie = false;
