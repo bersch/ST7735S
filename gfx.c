@@ -156,24 +156,6 @@ void filledCircle(uint16_t xc, uint16_t yc, uint16_t r) {
 #define PI4  PI/4.0
 #define PI34 PI*3.0/4.0
 
-#if 0
-float Atan2(int16_t x, int16_t y)
-{
-    float angle;
-    uint16_t abs_x = abs(x);
-
-    if (y>=0) {
-        angle = PI4  - ( PI4 * (1.0 * (y - abs_x) / (1.0 * (abs_x + y))) );
-    } else {
-        angle = PI34 - ( PI4 * (1.0 * (y + abs_x) / (1.0 * (abs_x - y))) );
-    }
-
-    angle = 180.0 * angle / PI;
-
-    return (x<0) ? 180.0+angle:180.0-angle; 
-}
-#endif
-
 float Atan2(int16_t y, int16_t x)
 {
     float angle;
@@ -295,11 +277,9 @@ void filledRect(uint16_t x, uint16_t y, uint16_t x2, uint16_t y2) {
     }
 }
 
-
 void fillScreen(void) {
     filledRect(0,0,WIDTH, HEIGHT);
 }
-
 
 /******************************************************************************
   Fonts
