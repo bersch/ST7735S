@@ -21,10 +21,6 @@ void setbgPixel(uint16_t x, uint16_t y) {
     ST7735S_bgPixel(x, y);
 }
 
-void fillScreen(void) {
-    ST7735S_fillScreen();
-}
-
 void flushBuffer(void) {
     ST7735S_flush();
 }
@@ -160,6 +156,7 @@ void filledCircle(uint16_t xc, uint16_t yc, uint16_t r) {
 #define PI4  PI/4.0
 #define PI34 PI*3.0/4.0
 
+#if 0
 float Atan2(int16_t x, int16_t y)
 {
     float angle;
@@ -175,6 +172,31 @@ float Atan2(int16_t x, int16_t y)
 
     return (x<0) ? 180.0+angle:180.0-angle; 
 }
+#endif
+
+float Atan2(int16_t y, int16_t x)
+{
+    float angle;
+    uint16_t abs_y = abs(y);
+
+    if ( x == 0 && y == 0)
+        return 0;
+
+    if (x>=0) {
+        if (abs_y + x == 0)
+            return 0;
+        angle = PI4  - ( PI4 * (1.0 * (x - abs_y) / (1.0 * (abs_y + x))) );
+    } else {
+        if (abs_y - x == 0)
+            return 0;
+        angle = PI34 - ( PI4 * (1.0 * (x + abs_y) / (1.0 * (abs_y - x))) );
+    }
+
+    angle = 180.0 * angle / PI;
+    return (y<0) ? -angle:angle;
+}
+
+
 
 bool isPie = false;
 uint16_t gxc, gyc;
@@ -185,7 +207,10 @@ void CheckAngle(uint16_t x, uint16_t y) {
     int16_t dx = x - gxc;
     int16_t dy = y - gyc;
 
-    float angle = Atan2(dx,dy);
+    float angle = Atan2(dy,dx);
+
+    if (angle < 0.0)
+        angle += 360.0;
 
     if (angle_from <= angle_to) {
         if (angle >= angle_from && angle <= angle_to)
@@ -269,6 +294,12 @@ void filledRect(uint16_t x, uint16_t y, uint16_t x2, uint16_t y2) {
         }
     }
 }
+
+
+void fillScreen(void) {
+    filledRect(0,0,WIDTH, HEIGHT);
+}
+
 
 /******************************************************************************
   Fonts
@@ -383,10 +414,10 @@ void setbgColor(uint8_t r, uint8_t g, uint8_t b) {
 }
 
 struct s_color {
-uint8_t  :8;
           uint8_t r:8;
           uint8_t g:8;
           uint8_t b:8;
+          uint8_t  :8;
 };
 
 void setColor24(uint32_t _color) {
