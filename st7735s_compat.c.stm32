@@ -2,9 +2,18 @@
 #include "spi.h"
 #include "tim.h"
 
+
+#include "stm32f3xx_ll_gpio.h"
+#ifndef _Pin_Init
+#define _Pin_Init(name) LL_GPIO_SetPinMode(name ## _GPIO_Port, name ## _Pin, LL_GPIO_MODE_OUTPUT)
+#define _Pin_Toggle(name) LL_GPIO_TogglePin(name ## _GPIO_Port, name ## _Pin)
+#define _Pin_High(name) LL_GPIO_SetOutputPin(name ## _GPIO_Port, name ## _Pin);
+#define _Pin_Low(name) LL_GPIO_ResetOutputPin(name ##_GPIO_Port, name ## _Pin);
+#endif
+
+
 uint32_t tim_period = 32768;
 uint32_t tim_pulse;
-
 
 
 void cInit(void) {
