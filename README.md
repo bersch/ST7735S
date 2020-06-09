@@ -1,7 +1,7 @@
 ST7735S
 =======
 
-an OS independent library for the neat ST7735S 80x160 IPS 0.96" TFT-Module
+an OS independent library for the neat ST7735S 80x160 IPS 0.96" TFT-Display
 
 # Features
 
