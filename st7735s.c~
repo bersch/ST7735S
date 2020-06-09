@@ -2,8 +2,7 @@
 #include "st7735s.h"
 #include "st7735s_compat.h"
 
-typedef enum {
-    NOP       = 0x00,
+typedef enum {NOP       = 0x00,
               SWRESET   = 0x01, /* Software Reset */
               RDDID     = 0x04, /* Read Display ID */
               RDDST     = 0x09, /* Read Display Status */
@@ -62,13 +61,13 @@ typedef enum {
 
 
 #if defined (BUFFER)
-#define FRAMESIZE (defWIDTH*defHEIGHT)
+#define FRAMESIZE (WIDTH*HEIGHT)
 color565_t frame[FRAMESIZE] = {0};
 #elif defined (BUFFER1)
 #define FRAMESIZE 1
 color565_t frame[FRAMESIZE] = {0};
 #elif defined (HVBUFFER)
-color565_t hvframe[defWIDTH] = {0};
+color565_t hvframe[WIDTH] = {0};
 color565_t hvcolor1;
 typedef enum { HF, VF, ONE, NONE } hvtype_t;
 hvtype_t hvtype = NONE;
@@ -76,11 +75,8 @@ hvtype_t hvtype = NONE;
 #error buffer mode not defined
 #endif
 
-uint16_t WIDTH = defWIDTH, HEIGHT = defHEIGHT;
-uint16_t XSTART = defXSTART, YSTART = defYSTART;
 
 uint16_t xmin, xmax, ymin, ymax;
-uint8_t madctl;
 
 /* colors */
 color565_t color;
@@ -115,8 +111,8 @@ static uint8_t init_cmd[] = {
                 0x29, 0x25, 0x2b, 0x39, 0x00, 0x01, 0x03, 0x10,
     17, GMCTRN1,0x03, 0x1d, 0x07, 0x06, 0x2E, 0x2C, 0x29, 0x2c,
                 0x2e, 0x2e, 0x37, 0x3f, 0x00, 0x00, 0x02, 0x10,
-    5,   CASET, 0, 0, 0, defHEIGHT-1,
-    5,   RASET, 0, 0, 0, defWIDTH-1,
+	5,   CASET, 0, 0, 0, HEIGHT-1,
+	5,   RASET, 0, 0, 0, WIDTH-1,
     1,   INVON, /* display inversion on/off */
     1,  IDMOFF, /* idle mode off */
     1,   NORON,  /* normal display mode on */
@@ -151,31 +147,14 @@ void ST7735S_sleepOut(void) {
 }
 
 void setOrientation(rotation_t r) {
-
+    uint8_t cmd[] = { MADCTL, 0 };
     switch ((uint8_t)r) {
-        case   R0: { madctl = 0b01100000;
-            WIDTH = defWIDTH; HEIGHT = defHEIGHT;
-            XSTART = defXSTART; YSTART = defYSTART;
-            break;
-        }
-        case  R90: { madctl = 0b11000000;
-            WIDTH = defHEIGHT; HEIGHT = defWIDTH;
-            XSTART = defYSTART; YSTART = defXSTART;
-            break;
-        }
-        case R180: { madctl = 0b10100000;
-            WIDTH = defWIDTH; HEIGHT = defHEIGHT;
-            XSTART = defXSTART; YSTART = defYSTART;
-            break;
-        }
-        case R270: { madctl = 0b01000000;
-            WIDTH = defHEIGHT; HEIGHT = defWIDTH;
-            XSTART = defYSTART; YSTART = defXSTART;
-            break;
-        }
+        case   R0: cmd[1] = 0b01100000; break;
+        case  R90: cmd[1] = 0b11000000; break;
+        case R180: cmd[1] = 0b10100000; break;
+        case R270: cmd[1] = 0b01000000; break;
     }
 
-    uint8_t cmd[] = { MADCTL, madctl };
     SPI_Transmit( 2, cmd);
 }
 
@@ -191,6 +170,29 @@ void updateWindow(uint16_t x, uint16_t y) {
         if (y < ymin) ymin = y;
         if (y > ymax) ymax = y;
     }
+}
+
+void ST7735S_fillScreen(void) {
+#if defined(BUFFER) || defined(HVBUFFER)
+    for(uint16_t y = 0; y < HEIGHT; y++)
+        for(uint16_t x = 0; x < WIDTH; x++)
+            ST7735S_Pixel(x,y);
+    ST7735S_flush();
+#else
+    uint8_t cmd[] = { RAMWR };
+    color565_t buffer[WIDTH];
+    for(uint16_t x = 0; x < WIDTH; x++)
+        buffer[x] = color;
+
+    for (uint16_t y = 0; y < HEIGHT; y ++) {
+        uint8_t c1[] = { CASET, 0 >> 8, 0, WIDTH >> 8, WIDTH };
+        uint8_t c2[] = { RASET, y >> 8, y, y >> 8, y };
+        SPI_Transmit(sizeof(c1), c1);
+        SPI_Transmit(sizeof(c2), c2);
+        SPI_TransmitCmd(1, cmd);
+        SPI_TransmitData( WIDTH * sizeof(color565_t), (uint8_t *)&buffer);
+    }
+#endif
 }
 
 void ST7735S_Init(void) {
@@ -213,6 +215,8 @@ void ST7735S_Init(void) {
 
     initCommands();
 
+    /* clear screen */
+    ST7735S_fillScreen();
 }
 
 void ST7735S_flush(void)
@@ -229,14 +233,14 @@ void ST7735S_flush(void)
         SPI_TransmitCmd(1, ram);
 
 #if defined(BUFFER)
-#if 1
+    #if 1
     uint16_t len  = (xmax-xmin+1)*2;
     for (uint16_t y = ymin; y <= ymax; y++)
         SPI_TransmitData(len, (uint8_t *)&frame[WIDTH*y+xmin]);
-#else
+    #else
     uint16_t len = (xmax-xmin+1)*2*(ymax-ymin+1);
     SPI_TransmitData(len, (uint8_t *)&frame[WIDTH*ymin+xmin]);
-#endif
+    #endif
 #elif defined(HVBUFFER)
     if (hvtype == VF) { // horiz line
         uint16_t len  = (xmax-xmin+1)*2;
@@ -354,75 +358,6 @@ void ST7735S_bgPixel(uint16_t x, uint16_t y) {
     }
 }
 #endif
-
-bool ST7735S_defineScrollArea(uint16_t x, uint16_t x2) {
-
-    /* tfa: top fixed area: nr of line from top of the frame mem and display) */
-    uint16_t tfa = WIDTH-x2+XSTART;
-    /* vsa: height of the vertical scrolling area in nr of line of the frame mem
-       (not the display) from the vertical scrolling address. the first line appears
-       immediately after the bottom most line of the top fixed area. */
-    uint16_t vsa = x2-x+XSTART;
-    /* bfa: bottom fixed are in nr of lines from bottom of the frame memory and display */
-    uint16_t bfa = x+XSTART;
-
-    if (tfa+vsa+bfa < 162)
-        return false;
-
-    /* reset mv */
-    uint8_t CMD1[] = { MADCTL, madctl & ~(1<<5) };
-    SPI_Transmit(sizeof(CMD1), CMD1);
-
-    uint8_t CMD[] = { SCRLAR, tfa >> 8, tfa,
-                              vsa >> 8, vsa,
-                              bfa >> 8, bfa };
-
-    SPI_Transmit(sizeof(CMD), CMD);
-
-    return true;
-}
-
-void ST7735S_tearingOn(bool blanking_only) {
-
-    uint8_t CMD[] = {TEON, (blanking_only)?0: 1 };
-    SPI_Transmit(2, CMD);
-}
-
-void ST7735S_tearingOff(void) {
-
-    uint8_t CMD[] = { TEOFF };
-    SPI_Transmit(1, CMD);
-}
-
-void ST7735S_scroll(uint8_t line) {
-
-    uint8_t CMD[] = {VSCSAD, 0, line};
-    SPI_Transmit(3, CMD);
-}
-
-void ST7735S_normalMode(void) {
-    uint8_t CMD[] = { NORON };
-    SPI_Transmit(1, CMD);
-    /* reset mv */
-    uint8_t CMD1[] = { MADCTL, madctl };
-    SPI_Transmit(sizeof(CMD1), CMD1);
-
-}
-
-void ST7735S_partialArea(uint16_t from, uint16_t to) {
-    /* set ml */
-    uint8_t bit = (from>to)?0:1;
-    uint8_t CMD1[] = { MADCTL, madctl & ~(bit<<4) };
-    SPI_Transmit(sizeof(CMD1), CMD1);
-
-    uint8_t CMD[] = { PTLAR, (WIDTH-to+XSTART) >> 8, WIDTH-to+XSTART,
-                           (WIDTH-from+XSTART) >> 8, WIDTH-from+XSTART };
-    SPI_Transmit(sizeof(CMD), CMD);
-
-    /* partial mode on */
-    uint8_t CMD2[] = { PTLON };
-    SPI_Transmit(sizeof(CMD2), CMD2);
-}
 
 void Delay(uint32_t d) {
     _Delay(d);

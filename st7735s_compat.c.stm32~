@@ -2,9 +2,6 @@
 #include "spi.h"
 #include "tim.h"
 
-uint32_t tim_period = 32768;
-uint32_t tim_pulse;
-
 
 #include "stm32f3xx_ll_gpio.h"
 #ifndef _Pin_Init
@@ -13,6 +10,10 @@ uint32_t tim_pulse;
 #define _Pin_High(name) LL_GPIO_SetOutputPin(name ## _GPIO_Port, name ## _Pin);
 #define _Pin_Low(name) LL_GPIO_ResetOutputPin(name ##_GPIO_Port, name ## _Pin);
 #endif
+
+
+uint32_t tim_period = 32768;
+uint32_t tim_pulse;
 
 
 void cInit(void) {
@@ -41,21 +42,17 @@ void Pin_DC_Low(void) {
     _Pin_Low(ST_DC);
 }
 
-extern uint8_t backlight_pct;
 void Pin_BLK_Pct(uint8_t pct) {
-    backlight_pct = pct;
     tim_pulse = pct*tim_period/100;
     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, tim_pulse);
 }
 
 void SPI_send(uint16_t len, uint8_t *data) {
-	Pin_CS_low();
 #if 0
 	while (len--)
 		HAL_SPI_Transmit(&hspi3, data++, 1, 0xF000);
 #else
 	HAL_SPI_Transmit(&hspi3, data, len, 0xF000);
-	Pin_CS_High();
 #endif
 }
 

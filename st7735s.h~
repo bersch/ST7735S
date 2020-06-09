@@ -31,8 +31,6 @@ typedef struct  {
     };
 } __attribute__((packed)) color565_t;
 
-extern uint16_t WIDTH, HEIGHT;
-extern uint16_t XSTART, XSTART;
 
 extern color565_t color;
 extern color565_t bg_color;
@@ -44,14 +42,10 @@ void ST7735S_flush(void);
 void ST7735S_Pixel(uint16_t x, uint16_t y);
 void ST7735S_bgPixel(uint16_t x, uint16_t y);
 void setOrientation(rotation_t r);
+void ST7735S_fillScreen(void);
 void ST7735S_sleepIn(void);
 void ST7735S_sleepOut(void);
-bool ST7735S_defineScrollArea(uint16_t, uint16_t);
-void ST7735S_tearingOn(bool);
-void ST7735S_tearingOff(void);
-void ST7735S_partialArea(uint16_t, uint16_t);
-void ST7735S_normalMode(void);
-void ST7735S_scroll(uint8_t);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

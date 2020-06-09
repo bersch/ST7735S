@@ -4,7 +4,7 @@
 #include "gfx.h"
 
 #ifndef abs
-#define abs(x) ( ((x)<0) ? -(x) : (x) )
+#define abs(x) ( (x<0) ? -(x) : (x) )
 #endif
 
 /* transparent background for fonts */
@@ -277,12 +277,9 @@ void filledRect(uint16_t x, uint16_t y, uint16_t x2, uint16_t y2) {
     }
 }
 
-
 void fillScreen(void) {
     filledRect(0,0,WIDTH, HEIGHT);
-    flushBuffer();
 }
-
 
 /******************************************************************************
   Fonts
