@@ -21,7 +21,7 @@ a portable library for the neat ST7735S 80x160 IPS 0.96" TFT-Display
 +     +---------------+
 |       Driver        | st7735s.c
 +---------------------+
-|   SPI/Compat Layer  | st7735s_compat.c
+|   SPI Compat Layer  | st7735s_compat.c
 +---------------------+
 |        OS-API       | Arduino/STM32/...
 +---------------------+
