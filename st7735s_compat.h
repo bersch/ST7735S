@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-void cInit(void);
+void SPI_Init(void);
 void Pin_CS_Low(void);
 void Pin_CS_High(void);
 void Pin_RES_High(void);

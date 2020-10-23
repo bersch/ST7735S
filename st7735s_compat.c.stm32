@@ -15,7 +15,7 @@ uint32_t tim_pulse;
 #endif
 
 
-void cInit(void) {
+void SPI_Init(void) {
 	// Pin_Low(CS);
 }
 

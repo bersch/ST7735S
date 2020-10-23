@@ -195,7 +195,7 @@ void updateWindow(uint16_t x, uint16_t y) {
 
 void ST7735S_Init(void) {
 
-    cInit();
+    SPI_Init();
 
     /* backlight */
     Pin_BLK_Pct(100);

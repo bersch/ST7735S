@@ -9,7 +9,7 @@
 #define SCK_PIN   0
 #define BLK_PIN    0
 
-void cInit(void) {
+void SPI_Init(void) {
     pinMode(CS_PIN, OUTPUT);
     pinMode(RES_PIN, OUTPUT);
     pinMode(DC_PIN, OUTPUT);
