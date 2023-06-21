@@ -6,6 +6,7 @@
 #        no args: use all chars
 
 use strict;
+use utf8;
 
 my $font; # root ptr
 my $properties; # root ptr
@@ -22,14 +23,20 @@ local *FH, *OC, *OH;
 # parse args ###########################################
 
 for (@ARGV) {
+    my ($from, $to);
+    
     if (-r $_) {
         ($basename = $fontname = $_) =~ s/\.bdf$//i;
          $basename =~ s/-/_/g;
         next;
     }
-    die "unkown parameter: '$_'\n" unless (/^(.)-(.)$/);
-    for (my $i = ord($1); $i <= ord($2); $i++) {
-        $ord{$i} = 1;
+    die "unkown parameter: '$_'\n" unless (/(\S+)-(\S+)/);
+    utf8::decode($from = $1);
+    utf8::decode($to = $2);
+    die "unknown range: ($1-$2)\n" if (ord($from) > ord($to));
+    
+    for (my $i = ord($from); $i <= ord($to); $i++) {
+        $ord{$i} = 1 
     }
 }
 
